@@ -1,0 +1,15 @@
+## .NET / Visual Studio
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.userosscache
+*.suo
+*.cache
+project.lock.json
+*.log
+*.nupkg
+*.pfx
+appsettings.Development.json.local

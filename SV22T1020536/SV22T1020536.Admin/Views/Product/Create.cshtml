@@ -1,0 +1,91 @@
+@model Product
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    var categories = ViewBag.Categories as IList<Category> ?? new List<Category>();
+    var suppliers = ViewBag.Suppliers as IList<Supplier> ?? new List<Supplier>();
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Thông tin mặt hàng</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-4">
+                        <label asp-for="ProductName" class="form-label fw-semibold">Tên mặt hàng <span class="text-danger">*</span></label>
+                        <input asp-for="ProductName" class="form-control form-control-lg" />
+                        <span asp-validation-for="ProductName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="CategoryID" class="form-label fw-semibold">Loại hàng <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryID" class="form-select">
+                                <option value="">-- Chọn loại hàng --</option>
+                                @foreach (var c in categories)
+                                {
+                                    <option value="@c.CategoryID">@c.CategoryName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryID" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SupplierID" class="form-label fw-semibold">Nhà cung cấp <span class="text-danger">*</span></label>
+                            <select asp-for="SupplierID" class="form-select">
+                                <option value="">-- Chọn nhà cung cấp --</option>
+                                @foreach (var s in suppliers)
+                                {
+                                    <option value="@s.SupplierID">@s.SupplierName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="SupplierID" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Unit" class="form-label fw-semibold">Đơn vị tính <span class="text-danger">*</span></label>
+                            <input asp-for="Unit" class="form-control" placeholder="Cái, Chiếc, Bộ..." />
+                            <span asp-validation-for="Unit" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Price" class="form-label fw-semibold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">₫</span>
+                                <input asp-for="Price" class="form-control fw-bold text-dark" type="number" step="0.01" min="0" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="IsSelling" />
+                            <label class="form-check-label" asp-for="IsSelling">Đang bán</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label asp-for="ProductDescription" class="form-label fw-semibold">Mô tả</label>
+                        <textarea asp-for="ProductDescription" class="form-control" rows="5"></textarea>
+                    </div>
+
+                    <div class="mb-0 mt-3">
+                        <label asp-for="Photo" class="form-label fw-semibold">Tên file ảnh (tuỳ chọn)</label>
+                        <input asp-for="Photo" class="form-control" placeholder="VD: product.png" />
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Lưu</button>
+                        <a href="~/Product" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

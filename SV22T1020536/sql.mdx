@@ -1,0 +1,747 @@
+-- ============================================================
+-- BÀI TẬP CHƯƠNG 3: THIẾT KẾ CƠ SỞ DỮ LIỆU PHÂN TÁN
+-- Hệ quản trị: SQL Server
+-- Bao gồm: Tạo bảng + Dữ liệu mẫu + Phân mảnh + Truy vấn minh họa
+-- ============================================================
+
+
+-- ============================================================
+-- BÀI TẬP 1: HỆ THỐNG QUẢN LÝ BỆNH VIỆN
+-- ============================================================
+
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'BenhVien_CSDLPT')
+    DROP DATABASE BenhVien_CSDLPT;
+GO
+CREATE DATABASE BenhVien_CSDLPT;
+GO
+USE BenhVien_CSDLPT;
+GO
+
+-- 1. Tạo bảng gốc
+
+CREATE TABLE Branches (
+    BranchID   INT PRIMARY KEY,
+    BranchName NVARCHAR(100) NOT NULL,
+    Location   NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Doctors (
+    DoctorID  INT PRIMARY KEY,
+    Name      NVARCHAR(100) NOT NULL,
+    Specialty NVARCHAR(100),
+    BranchID  INT REFERENCES Branches(BranchID)
+);
+
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY,
+    Name      NVARCHAR(100) NOT NULL,
+    DOB       DATE,
+    BranchID  INT REFERENCES Branches(BranchID),
+    Phone     VARCHAR(15)
+);
+
+CREATE TABLE MedicalRecords (
+    RecordID  INT PRIMARY KEY,
+    PatientID INT REFERENCES Patients(PatientID),
+    BranchID  INT REFERENCES Branches(BranchID),
+    Diagnosis NVARCHAR(200),
+    Date      DATE
+);
+
+-- 2. Dữ liệu mẫu
+
+INSERT INTO Branches VALUES
+(1, N'Bệnh viện TW Huế',     N'Huế'),
+(2, N'Bệnh viện TW Đà Nẵng', N'Đà Nẵng'),
+(3, N'Bệnh viện TW Hà Nội',  N'Hà Nội');
+
+INSERT INTO Doctors VALUES
+(1, N'Dr. Anh',  N'General Medicine', 1),
+(2, N'Dr. Bình', N'Cardiology',       2),
+(3, N'Dr. Châu', N'Endocrinology',    3);
+
+INSERT INTO Patients VALUES
+(1, N'Anh',  '1985-01-01', 1, '0905591511'),
+(2, N'Bình', '1990-02-02', 2, '0905591512'),
+(3, N'Châu', '1995-03-03', 3, '0905591513'),
+(4, N'Định', '2005-04-04', 1, '0905591514');
+
+INSERT INTO MedicalRecords VALUES
+(1001, 1, 1, N'Flu',        '2025-01-01'),
+(1002, 2, 2, N'Diabetes',   '2025-02-02'),
+(1003, 3, 3, N'Head Ache',  '2025-03-03'),
+(1004, 4, 1, N'Parkinson',  '2025-04-04');
+
+-- 3. Phân mảnh ngang (Views mô phỏng phân tán)
+
+GO
+CREATE VIEW Patients_Hue          AS SELECT * FROM Patients       WHERE BranchID = 1;
+GO
+CREATE VIEW MedicalRecords_Hue    AS SELECT * FROM MedicalRecords WHERE BranchID = 1;
+GO
+
+CREATE VIEW Patients_DaNang       AS SELECT * FROM Patients       WHERE BranchID = 2;
+GO
+CREATE VIEW MedicalRecords_DaNang AS SELECT * FROM MedicalRecords WHERE BranchID = 2;
+GO
+
+CREATE VIEW Patients_HaNoi        AS SELECT * FROM Patients       WHERE BranchID = 3;
+GO
+CREATE VIEW MedicalRecords_HaNoi  AS SELECT * FROM MedicalRecords WHERE BranchID = 3;
+GO
+
+-- Branches được nhân bản đầy đủ tại mỗi node (dùng chung bảng gốc)
+
+-- 4. Truy vấn minh họa
+
+-- Truy vấn 1: Hồ sơ y tế bệnh nhân tại Bệnh viện Huế
+PRINT N'--- TQ1: Hồ sơ y tế tại Bệnh viện Huế ---';
+SELECT mr.RecordID, p.Name AS PatientName, mr.Diagnosis, mr.Date
+FROM MedicalRecords_Hue mr
+JOIN Patients_Hue p ON mr.PatientID = p.PatientID;
+
+-- Truy vấn 2: Danh sách bác sĩ tại tất cả chi nhánh
+PRINT N'--- TQ2: Danh sách bác sĩ toàn hệ thống ---';
+SELECT d.DoctorID, d.Name, d.Specialty, b.BranchName
+FROM Doctors d
+JOIN Branches b ON d.BranchID = b.BranchID;
+
+-- Truy vấn 3: Tổng số bệnh nhân toàn hệ thống
+PRINT N'--- TQ3: Tổng số bệnh nhân ---';
+SELECT COUNT(*) AS TongBenhNhan FROM Patients;
+
+GO
+
+
+-- ============================================================
+-- BÀI TẬP 2: HỆ THỐNG BÁN VÉ MÁY BAY (VIETTRAVEL)
+-- ============================================================
+
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'VeMAyBay_CSDLPT')
+    DROP DATABASE VeMAyBay_CSDLPT;
+GO
+CREATE DATABASE VeMAyBay_CSDLPT;
+GO
+USE VeMAyBay_CSDLPT;
+GO
+
+-- 1. Tạo bảng gốc
+
+CREATE TABLE Regions (
+    RegionID   INT PRIMARY KEY,
+    RegionName NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Passengers (
+    PassengerID INT PRIMARY KEY,
+    Name        NVARCHAR(100) NOT NULL,
+    DOB         DATE,
+    Phone       VARCHAR(15),
+    RegionID    INT REFERENCES Regions(RegionID)
+);
+
+CREATE TABLE Flights (
+    FlightID      INT PRIMARY KEY,
+    FlightCode    VARCHAR(10) NOT NULL,
+    Origin        NVARCHAR(100),
+    Destination   NVARCHAR(100),
+    DepartureTime DATETIME,
+    RegionID      INT REFERENCES Regions(RegionID)
+);
+
+CREATE TABLE Bookings (
+    BookingID   INT PRIMARY KEY,
+    PassengerID INT REFERENCES Passengers(PassengerID),
+    FlightID    INT REFERENCES Flights(FlightID),
+    SeatNo      VARCHAR(5),
+    BookingDate DATE,
+    RegionID    INT REFERENCES Regions(RegionID)
+);
+
+-- 2. Dữ liệu mẫu
+
+INSERT INTO Regions VALUES
+(1, N'Miền Bắc'),
+(2, N'Miền Trung'),
+(3, N'Miền Nam');
+
+INSERT INTO Passengers VALUES
+(1, N'Nguyễn An',   '1990-01-15', '0901000001', 1),
+(2, N'Trần Bình',   '1985-03-20', '0902000002', 2),
+(3, N'Lê Châu',     '1992-07-10', '0903000003', 3),
+(4, N'Phạm Dung',   '1988-11-05', '0904000004', 1),
+(5, N'Hoàng Giang', '1995-06-25', '0905000005', 3);
+
+INSERT INTO Flights VALUES
+(101, 'VT101', N'Hà Nội',  N'TP.HCM',  '2025-06-01 08:00', 1),
+(102, 'VT102', N'Đà Nẵng', N'Hà Nội',  '2025-06-01 10:00', 2),
+(103, 'VT103', N'TP.HCM',  N'Đà Nẵng', '2025-06-02 14:00', 3),
+(104, 'VT104', N'Hà Nội',  N'Đà Nẵng', '2025-06-03 07:30', 1),
+(105, 'VT105', N'TP.HCM',  N'Hà Nội',  '2025-06-04 09:00', 3);
+
+INSERT INTO Bookings VALUES
+(1001, 1, 101, 'A01', '2025-05-20', 1),
+(1002, 2, 102, 'B05', '2025-05-21', 2),
+(1003, 3, 103, 'C10', '2025-05-22', 3),
+(1004, 4, 104, 'A03', '2025-05-23', 1),
+(1005, 5, 105, 'D07', '2025-05-24', 3);
+
+-- 3. Phân mảnh ngang theo khu vực
+
+GO
+CREATE VIEW Passengers_North   AS SELECT * FROM Passengers WHERE RegionID = 1;
+GO
+CREATE VIEW Passengers_Central AS SELECT * FROM Passengers WHERE RegionID = 2;
+GO
+CREATE VIEW Passengers_South   AS SELECT * FROM Passengers WHERE RegionID = 3;
+GO
+
+CREATE VIEW Flights_North      AS SELECT * FROM Flights    WHERE RegionID = 1;
+GO
+CREATE VIEW Flights_Central    AS SELECT * FROM Flights    WHERE RegionID = 2;
+GO
+CREATE VIEW Flights_South      AS SELECT * FROM Flights    WHERE RegionID = 3;
+GO
+
+CREATE VIEW Bookings_North     AS SELECT * FROM Bookings   WHERE RegionID = 1;
+GO
+CREATE VIEW Bookings_Central   AS SELECT * FROM Bookings   WHERE RegionID = 2;
+GO
+CREATE VIEW Bookings_South     AS SELECT * FROM Bookings   WHERE RegionID = 3;
+GO
+
+-- Regions được nhân bản đầy đủ tại mỗi node
+
+-- 4. Truy vấn minh họa
+
+PRINT N'--- TQ1: Vé đặt của hành khách miền Bắc ---';
+SELECT b.BookingID, p.Name, f.FlightCode, f.Origin, f.Destination, b.SeatNo
+FROM Bookings_North b
+JOIN Passengers p ON b.PassengerID = p.PassengerID
+JOIN Flights    f ON b.FlightID    = f.FlightID;
+
+PRINT N'--- TQ2: Tất cả chuyến bay ---';
+SELECT f.FlightCode, f.Origin, f.Destination, f.DepartureTime, r.RegionName
+FROM Flights f JOIN Regions r ON f.RegionID = r.RegionID
+ORDER BY f.DepartureTime;
+
+PRINT N'--- TQ3: Tổng số vé đã bán ---';
+SELECT COUNT(*) AS TongVeDaBan FROM Bookings;
+
+GO
+
+
+-- ============================================================
+-- BÀI TẬP 3: HỆ THỐNG BÁN VÉ TÀU HỎA
+-- ============================================================
+
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'VeTauHoa_CSDLPT')
+    DROP DATABASE VeTauHoa_CSDLPT;
+GO
+CREATE DATABASE VeTauHoa_CSDLPT;
+GO
+USE VeTauHoa_CSDLPT;
+GO
+
+-- 1. Tạo bảng gốc
+
+CREATE TABLE Stations (
+    StationID   INT PRIMARY KEY,
+    StationName NVARCHAR(100) NOT NULL,
+    RegionID    INT NOT NULL
+);
+
+CREATE TABLE Trains (
+    TrainID   INT PRIMARY KEY,
+    TrainCode VARCHAR(10) NOT NULL,
+    TrainType NVARCHAR(50)
+);
+
+CREATE TABLE Schedules (
+    ScheduleID    INT PRIMARY KEY,
+    TrainID       INT REFERENCES Trains(TrainID),
+    OriginID      INT REFERENCES Stations(StationID),
+    DestinationID INT REFERENCES Stations(StationID),
+    DepartureTime DATETIME,
+    ArrivalTime   DATETIME,
+    RegionID      INT NOT NULL
+);
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    Name       NVARCHAR(100) NOT NULL,
+    Phone      VARCHAR(15),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Tickets (
+    TicketID   INT PRIMARY KEY,
+    CustomerID INT REFERENCES Customers(CustomerID),
+    ScheduleID INT REFERENCES Schedules(ScheduleID),
+    SeatNo     VARCHAR(5),
+    SeatClass  NVARCHAR(20),
+    Price      DECIMAL(10,2),
+    RegionID   INT NOT NULL
+);
+
+-- 2. Dữ liệu mẫu
+
+INSERT INTO Stations VALUES
+(1, N'Ga Hà Nội',    1),
+(2, N'Ga Vinh',      1),
+(3, N'Ga Đà Nẵng',   2),
+(4, N'Ga Huế',       2),
+(5, N'Ga Nha Trang', 3),
+(6, N'Ga Sài Gòn',   3);
+
+INSERT INTO Trains VALUES
+(1, 'SE1', N'Tốc hành'),
+(2, 'SE3', N'Tốc hành'),
+(3, 'TN1', N'Thường');
+
+INSERT INTO Schedules VALUES
+(201, 1, 1, 6, '2025-06-01 19:00', '2025-06-02 14:00', 1),
+(202, 2, 1, 6, '2025-06-02 08:00', '2025-06-03 06:00', 1),
+(203, 3, 3, 6, '2025-06-01 10:00', '2025-06-01 18:00', 2),
+(204, 1, 6, 1, '2025-06-03 19:00', '2025-06-04 14:00', 3);
+
+INSERT INTO Customers VALUES
+(1, N'Nguyễn Hùng', '0901111111', 1),
+(2, N'Trần Mai',    '0902222222', 2),
+(3, N'Lê Phong',    '0903333333', 3),
+(4, N'Phạm Tuyết',  '0904444444', 1);
+
+INSERT INTO Tickets VALUES
+(3001, 1, 201, 'A1', N'Mềm điều hòa', 800000, 1),
+(3002, 4, 201, 'A2', N'Mềm điều hòa', 800000, 1),
+(3003, 2, 203, 'B3', N'Cứng',         350000, 2),
+(3004, 3, 204, 'C5', N'Mềm điều hòa', 750000, 3);
+
+-- 3. Phân mảnh ngang
+
+GO
+CREATE VIEW Schedules_North   AS SELECT * FROM Schedules  WHERE RegionID = 1;
+GO
+CREATE VIEW Schedules_Central AS SELECT * FROM Schedules  WHERE RegionID = 2;
+GO
+CREATE VIEW Schedules_South   AS SELECT * FROM Schedules  WHERE RegionID = 3;
+GO
+
+CREATE VIEW Customers_North   AS SELECT * FROM Customers  WHERE RegionID = 1;
+GO
+CREATE VIEW Customers_Central AS SELECT * FROM Customers  WHERE RegionID = 2;
+GO
+CREATE VIEW Customers_South   AS SELECT * FROM Customers  WHERE RegionID = 3;
+GO
+
+CREATE VIEW Tickets_North     AS SELECT * FROM Tickets    WHERE RegionID = 1;
+GO
+CREATE VIEW Tickets_Central   AS SELECT * FROM Tickets    WHERE RegionID = 2;
+GO
+CREATE VIEW Tickets_South     AS SELECT * FROM Tickets    WHERE RegionID = 3;
+GO
+
+-- Stations & Trains được nhân bản đầy đủ tại mỗi node
+
+-- 4. Truy vấn minh họa
+
+PRINT N'--- TQ1: Vé chuyến SE1 từ Hà Nội (Node Bắc) ---';
+SELECT t.TicketID, c.Name AS KhachHang, t.SeatNo, t.SeatClass, t.Price
+FROM Tickets_North t
+JOIN Customers c  ON t.CustomerID = c.CustomerID
+JOIN Schedules s  ON t.ScheduleID = s.ScheduleID
+JOIN Trains    tr ON s.TrainID    = tr.TrainID
+JOIN Stations  og ON s.OriginID   = og.StationID
+WHERE tr.TrainCode = 'SE1' AND og.StationName = N'Ga Hà Nội';
+
+PRINT N'--- TQ2: Lịch trình tất cả chuyến tàu ---';
+SELECT tr.TrainCode, og.StationName AS DiemDi, ds.StationName AS DiemDen,
+       s.DepartureTime, s.ArrivalTime
+FROM Schedules s
+JOIN Trains   tr ON s.TrainID       = tr.TrainID
+JOIN Stations og ON s.OriginID      = og.StationID
+JOIN Stations ds ON s.DestinationID = ds.StationID
+ORDER BY s.DepartureTime;
+
+PRINT N'--- TQ3: Tổng số vé và doanh thu ---';
+SELECT COUNT(*) AS TongVe, SUM(Price) AS TongDoanhThu FROM Tickets;
+
+GO
+
+
+-- ============================================================
+-- BÀI TẬP 4: HỆ THỐNG SIÊU THỊ AONE MALL
+-- ============================================================
+
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'AOneMall_CSDLPT')
+    DROP DATABASE AOneMall_CSDLPT;
+GO
+CREATE DATABASE AOneMall_CSDLPT;
+GO
+USE AOneMall_CSDLPT;
+GO
+
+-- 1. Tạo bảng gốc
+
+CREATE TABLE StoreBranches (
+    BranchID   INT PRIMARY KEY,
+    BranchName NVARCHAR(100) NOT NULL,
+    RegionID   INT NOT NULL,
+    Address    NVARCHAR(200)
+);
+
+CREATE TABLE Products (
+    ProductID   INT PRIMARY KEY,
+    ProductName NVARCHAR(150) NOT NULL,
+    Category    NVARCHAR(100),
+    Price       DECIMAL(12,2),
+    RegionID    INT NOT NULL
+);
+
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    Name       NVARCHAR(100) NOT NULL,
+    Phone      VARCHAR(15),
+    Email      VARCHAR(100),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Orders (
+    OrderID     INT PRIMARY KEY,
+    CustomerID  INT REFERENCES Customers(CustomerID),
+    BranchID    INT REFERENCES StoreBranches(BranchID),
+    OrderDate   DATE,
+    TotalAmount DECIMAL(12,2),
+    RegionID    INT NOT NULL
+);
+
+CREATE TABLE OrderItems (
+    ItemID    INT PRIMARY KEY,
+    OrderID   INT REFERENCES Orders(OrderID),
+    ProductID INT REFERENCES Products(ProductID),
+    Quantity  INT,
+    UnitPrice DECIMAL(12,2)
+);
+
+CREATE TABLE Stock (
+    StockID   INT PRIMARY KEY,
+    BranchID  INT REFERENCES StoreBranches(BranchID),
+    ProductID INT REFERENCES Products(ProductID),
+    Quantity  INT,
+    RegionID  INT NOT NULL
+);
+
+-- 2. Dữ liệu mẫu
+
+INSERT INTO StoreBranches VALUES
+(1, N'AOne Hà Nội',    1, N'123 Hoàng Mai, Hà Nội'),
+(2, N'AOne Hải Phòng', 1, N'456 Lê Chân, Hải Phòng'),
+(3, N'AOne Đà Nẵng',   2, N'789 Hải Châu, Đà Nẵng'),
+(4, N'AOne TP.HCM',    3, N'321 Quận 1, TP.HCM'),
+(5, N'AOne Cần Thơ',   3, N'654 Ninh Kiều, Cần Thơ');
+
+INSERT INTO Products VALUES
+(1, N'Gạo ST25 5kg',         N'Thực phẩm',    120000, 3),
+(2, N'Dầu ăn Neptune 1L',     N'Thực phẩm',     45000, 1),
+(3, N'Nước mắm Phú Quốc',     N'Thực phẩm',     35000, 3),
+(4, N'Máy lọc nước Sunhouse', N'Điện gia dụng',3500000,1),
+(5, N'Quạt điện Asia',        N'Điện gia dụng', 450000, 2);
+
+INSERT INTO Customers VALUES
+(1, N'Nguyễn Lan', '0911111111', 'lan@mail.com',   1),
+(2, N'Trần Tuấn',  '0922222222', 'tuan@mail.com',  2),
+(3, N'Lê Hương',   '0933333333', 'huong@mail.com', 3),
+(4, N'Phạm Thủy',  '0944444444', 'thuy@mail.com',  1),
+(5, N'Võ Minh',    '0955555555', 'minh@mail.com',  3);
+
+INSERT INTO Orders VALUES
+(4001, 1, 1, '2025-05-01', 165000, 1),
+(4002, 2, 2, '2025-05-02', 450000, 1),
+(4003, 3, 3, '2025-05-03',  80000, 2),
+(4004, 3, 4, '2025-05-04', 120000, 3),
+(4005, 5, 5, '2025-05-05', 155000, 3);
+
+INSERT INTO OrderItems VALUES
+(1, 4001, 2, 1,  45000),
+(2, 4001, 1, 1, 120000),
+(3, 4002, 4, 1,3500000),
+(4, 4003, 3, 2,  35000),
+(5, 4004, 1, 1, 120000),
+(6, 4005, 3, 1,  35000),
+(7, 4005, 1, 1, 120000);
+
+INSERT INTO Stock VALUES
+(1, 1, 2, 200, 1),
+(2, 1, 4,  10, 1),
+(3, 2, 2, 150, 1),
+(4, 3, 3, 300, 2),
+(5, 3, 5,  50, 2),
+(6, 4, 1, 500, 3),
+(7, 5, 3, 400, 3);
+
+-- 3. Phân mảnh ngang
+
+GO
+CREATE VIEW Products_North   AS SELECT * FROM Products WHERE RegionID = 1;
+GO
+CREATE VIEW Products_Central AS SELECT * FROM Products WHERE RegionID = 2;
+GO
+CREATE VIEW Products_South   AS SELECT * FROM Products WHERE RegionID = 3;
+GO
+
+CREATE VIEW Customers_North   AS SELECT * FROM Customers WHERE RegionID = 1;
+GO
+CREATE VIEW Customers_Central AS SELECT * FROM Customers WHERE RegionID = 2;
+GO
+CREATE VIEW Customers_South   AS SELECT * FROM Customers WHERE RegionID = 3;
+GO
+
+CREATE VIEW Orders_North   AS SELECT * FROM Orders WHERE RegionID = 1;
+GO
+CREATE VIEW Orders_Central AS SELECT * FROM Orders WHERE RegionID = 2;
+GO
+CREATE VIEW Orders_South   AS SELECT * FROM Orders WHERE RegionID = 3;
+GO
+
+CREATE VIEW Stock_North    AS SELECT * FROM Stock WHERE RegionID = 1;
+GO
+CREATE VIEW Stock_Central  AS SELECT * FROM Stock WHERE RegionID = 2;
+GO
+CREATE VIEW Stock_South    AS SELECT * FROM Stock WHERE RegionID = 3;
+GO
+
+-- StoreBranches được nhân bản đầy đủ tại mỗi node
+
+-- 4. Truy vấn minh họa
+
+PRINT N'--- TQ1: Tồn kho miền Bắc ---';
+SELECT sb.BranchName, p.ProductName, s.Quantity
+FROM Stock_North s
+JOIN StoreBranches sb ON s.BranchID  = sb.BranchID
+JOIN Products      p  ON s.ProductID = p.ProductID;
+
+PRINT N'--- TQ2: Sản phẩm miền Trung ---';
+SELECT ProductName, Category, Price FROM Products_Central;
+
+PRINT N'--- TQ3: Tổng doanh thu toàn hệ thống theo khu vực ---';
+SELECT
+    SUM(CASE WHEN RegionID = 1 THEN TotalAmount ELSE 0 END) AS DoanhThu_Bac,
+    SUM(CASE WHEN RegionID = 2 THEN TotalAmount ELSE 0 END) AS DoanhThu_Trung,
+    SUM(CASE WHEN RegionID = 3 THEN TotalAmount ELSE 0 END) AS DoanhThu_Nam,
+    SUM(TotalAmount) AS TongDoanhThu
+FROM Orders;
+
+GO
+
+
+-- ============================================================
+-- BÀI TẬP 5: HỆ THỐNG QUẢN LÝ TRƯỜNG ĐẠI HỌC
+-- ============================================================
+
+USE master;
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = 'DaiHoc_CSDLPT')
+    DROP DATABASE DaiHoc_CSDLPT;
+GO
+CREATE DATABASE DaiHoc_CSDLPT;
+GO
+USE DaiHoc_CSDLPT;
+GO
+
+-- 1. Tạo bảng gốc
+
+CREATE TABLE Campuses (
+    CampusID   INT PRIMARY KEY,
+    CampusName NVARCHAR(100) NOT NULL,
+    Location   NVARCHAR(100),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Faculties (
+    FacultyID   INT PRIMARY KEY,
+    FacultyName NVARCHAR(100) NOT NULL,
+    CampusID    INT REFERENCES Campuses(CampusID)
+);
+
+CREATE TABLE Lecturers (
+    LecturerID INT PRIMARY KEY,
+    Name       NVARCHAR(100) NOT NULL,
+    Degree     NVARCHAR(50),
+    FacultyID  INT REFERENCES Faculties(FacultyID),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY,
+    Name      NVARCHAR(100) NOT NULL,
+    DOB       DATE,
+    Gender    NVARCHAR(10),
+    CampusID  INT REFERENCES Campuses(CampusID),
+    RegionID  INT NOT NULL
+);
+
+CREATE TABLE Courses (
+    CourseID   INT PRIMARY KEY,
+    CourseName NVARCHAR(150) NOT NULL,
+    Credits    INT,
+    FacultyID  INT REFERENCES Faculties(FacultyID),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Classes (
+    ClassID    INT PRIMARY KEY,
+    CourseID   INT REFERENCES Courses(CourseID),
+    LecturerID INT REFERENCES Lecturers(LecturerID),
+    Semester   VARCHAR(10),
+    CampusID   INT REFERENCES Campuses(CampusID),
+    RegionID   INT NOT NULL
+);
+
+CREATE TABLE Enrollments (
+    EnrollmentID INT PRIMARY KEY,
+    StudentID    INT REFERENCES Students(StudentID),
+    ClassID      INT REFERENCES Classes(ClassID),
+    Grade        DECIMAL(4,2),
+    RegionID     INT NOT NULL
+);
+
+-- 2. Dữ liệu mẫu
+
+INSERT INTO Campuses VALUES
+(1, N'Cơ sở Hà Nội',  N'Hà Nội',  1),
+(2, N'Cơ sở Đà Nẵng', N'Đà Nẵng', 2),
+(3, N'Cơ sở TP.HCM',  N'TP.HCM',  3);
+
+INSERT INTO Faculties VALUES
+(1, N'Công nghệ Thông tin', 1),
+(2, N'Kinh tế',             1),
+(3, N'Công nghệ Thông tin', 2),
+(4, N'Công nghệ Thông tin', 3),
+(5, N'Kinh tế',             3);
+
+INSERT INTO Lecturers VALUES
+(1, N'TS. Nguyễn Hải', N'Tiến sĩ', 1, 1),
+(2, N'ThS. Trần Linh', N'Thạc sĩ', 2, 1),
+(3, N'TS. Lê Minh',    N'Tiến sĩ', 3, 2),
+(4, N'PGS. Phạm Anh',  N'PGS.TS',  4, 3),
+(5, N'ThS. Võ Hương',  N'Thạc sĩ', 5, 3);
+
+INSERT INTO Students VALUES
+(1, N'Nguyễn Tú',  '2003-01-10', N'Nam', 1, 1),
+(2, N'Trần Hoa',   '2003-03-15', N'Nữ',  1, 1),
+(3, N'Lê Sơn',     '2002-07-20', N'Nam', 2, 2),
+(4, N'Phạm Ngọc',  '2003-09-05', N'Nữ',  3, 3),
+(5, N'Hoàng Vinh', '2002-12-01', N'Nam', 3, 3);
+
+INSERT INTO Courses VALUES
+(1, N'Cơ sở dữ liệu',    3, 1, 1),
+(2, N'Lập trình Python', 3, 1, 1),
+(3, N'Mạng máy tính',    3, 3, 2),
+(4, N'Kinh tế vi mô',    2, 5, 3),
+(5, N'Trí tuệ nhân tạo', 3, 4, 3);
+
+INSERT INTO Classes VALUES
+(1, 1, 1, '2025-1', 1, 1),
+(2, 2, 2, '2025-1', 1, 1),
+(3, 3, 3, '2025-1', 2, 2),
+(4, 4, 5, '2025-1', 3, 3),
+(5, 5, 4, '2025-1', 3, 3);
+
+INSERT INTO Enrollments VALUES
+(1, 1, 1, 8.5, 1),
+(2, 2, 1, 7.0, 1),
+(3, 2, 2, 9.0, 1),
+(4, 3, 3, 7.5, 2),
+(5, 4, 4, 8.0, 3),
+(6, 5, 5, 6.5, 3),
+(7, 4, 5, 9.5, 3);
+
+-- 3. Phân mảnh ngang
+
+GO
+CREATE VIEW Students_North    AS SELECT * FROM Students    WHERE RegionID = 1;
+GO
+CREATE VIEW Students_Central  AS SELECT * FROM Students    WHERE RegionID = 2;
+GO
+CREATE VIEW Students_South    AS SELECT * FROM Students    WHERE RegionID = 3;
+GO
+
+CREATE VIEW Lecturers_North   AS SELECT * FROM Lecturers   WHERE RegionID = 1;
+GO
+CREATE VIEW Lecturers_Central AS SELECT * FROM Lecturers   WHERE RegionID = 2;
+GO
+CREATE VIEW Lecturers_South   AS SELECT * FROM Lecturers   WHERE RegionID = 3;
+GO
+
+CREATE VIEW Courses_North     AS SELECT * FROM Courses     WHERE RegionID = 1;
+GO
+CREATE VIEW Courses_Central   AS SELECT * FROM Courses     WHERE RegionID = 2;
+GO
+CREATE VIEW Courses_South     AS SELECT * FROM Courses     WHERE RegionID = 3;
+GO
+
+CREATE VIEW Classes_North     AS SELECT * FROM Classes     WHERE RegionID = 1;
+GO
+CREATE VIEW Classes_Central   AS SELECT * FROM Classes     WHERE RegionID = 2;
+GO
+CREATE VIEW Classes_South     AS SELECT * FROM Classes     WHERE RegionID = 3;
+GO
+
+CREATE VIEW Enrollments_North   AS SELECT * FROM Enrollments WHERE RegionID = 1;
+GO
+CREATE VIEW Enrollments_Central AS SELECT * FROM Enrollments WHERE RegionID = 2;
+GO
+CREATE VIEW Enrollments_South   AS SELECT * FROM Enrollments WHERE RegionID = 3;
+GO
+
+-- Campuses được nhân bản đầy đủ tại mỗi node
+
+-- 4. Truy vấn minh họa
+
+PRINT N'--- TQ1: Sinh viên cơ sở miền Bắc ---';
+SELECT s.StudentID, s.Name, s.DOB, s.Gender, c.CampusName
+FROM Students_North s
+JOIN Campuses c ON s.CampusID = c.CampusID;
+
+PRINT N'--- TQ2: Tất cả môn học toàn hệ thống ---';
+SELECT co.CourseID, co.CourseName, co.Credits, ca.CampusName
+FROM Courses co
+JOIN Faculties f  ON co.FacultyID = f.FacultyID
+JOIN Campuses  ca ON f.CampusID   = ca.CampusID
+ORDER BY co.CourseID;
+
+PRINT N'--- TQ3: Điểm trung bình toàn hệ thống ---';
+SELECT
+    AVG(CASE WHEN RegionID = 1 THEN Grade END) AS DiemTB_Bac,
+    AVG(CASE WHEN RegionID = 2 THEN Grade END) AS DiemTB_Trung,
+    AVG(CASE WHEN RegionID = 3 THEN Grade END) AS DiemTB_Nam,
+    AVG(Grade) AS DiemTB_ToanHeThong
+FROM Enrollments;
+
+PRINT N'--- TQ4: Bảng điểm sinh viên miền Nam ---';
+SELECT s.Name AS SinhVien, co.CourseName AS MonHoc, e.Grade AS Diem
+FROM Enrollments_South e
+JOIN Students s  ON e.StudentID = s.StudentID
+JOIN Classes  cl ON e.ClassID   = cl.ClassID
+JOIN Courses  co ON cl.CourseID = co.CourseID
+ORDER BY s.Name, co.CourseName;
+
+GO
+
+-- ============================================================
+-- KẾT THÚC SCRIPT
+-- Tóm tắt các database đã tạo:
+--   1. BenhVien_CSDLPT   - Hệ thống quản lý bệnh viện
+--   2. VeMAyBay_CSDLPT   - Hệ thống bán vé máy bay
+--   3. VeTauHoa_CSDLPT   - Hệ thống bán vé tàu hỏa
+--   4. AOneMall_CSDLPT   - Hệ thống siêu thị AOne Mall
+--   5. DaiHoc_CSDLPT     - Hệ thống quản lý trường đại học
+-- ============================================================

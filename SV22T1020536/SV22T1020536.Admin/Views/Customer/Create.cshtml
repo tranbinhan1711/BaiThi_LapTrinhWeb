@@ -1,0 +1,93 @@
+@model Customer
+@using SV22T1020536.Models.DataDictionary
+@{
+    ViewBag.Title = "Thêm khách hàng";
+    var provinces = ViewBag.Provinces as List<Province> ?? new List<Province>();
+}
+
+<div class="card card-primary card-outline mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Thêm khách hàng mới</h3>
+    </div>
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="CustomerName" class="form-label">Tên khách hàng: <span class="text-danger">*</span></label>
+                        <input asp-for="CustomerName" class="form-control" required />
+                        <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="ContactName" class="form-label">Tên giao dịch: <span class="text-danger">*</span></label>
+                        <input asp-for="ContactName" class="form-control" required />
+                        <span asp-validation-for="ContactName" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label">Điện thoại: <span class="text-danger">*</span></label>
+                        <input asp-for="Phone" class="form-control" type="tel" required />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email: <span class="text-danger">*</span></label>
+                        <input asp-for="Email" class="form-control" type="email" required />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Province" class="form-label">Tỉnh/Thành phố:</label>
+                        <select asp-for="Province" class="form-select">
+                            <option value="">-- Chọn tỉnh/thành --</option>
+                            @foreach (var p in provinces)
+                            {
+                                <option value="@p.ProvinceName">@p.ProvinceName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Mật khẩu đăng nhập: <span class="text-danger">*</span></label>
+                        <input asp-for="Password" class="form-control" type="password" autocomplete="new-password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label">Địa chỉ:</label>
+                <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" asp-for="IsLocked" />
+                    <label class="form-check-label" asp-for="IsLocked">Khóa tài khoản</label>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Lưu thông tin
+            </button>
+            <a href="~/Customer" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Hủy bỏ
+            </a>
+        </div>
+    </form>
+</div>

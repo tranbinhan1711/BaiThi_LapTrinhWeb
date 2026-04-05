@@ -1,0 +1,56 @@
+@model PosCartRemoveItemConfirmModel
+@{
+    ViewBag.Title = "Xóa mặt hàng khỏi giỏ";
+}
+@section PageToolBar {
+    <button type="submit" form="formRemoveCartItem" class="btn btn-danger">
+        <i class="bi bi-trash me-1"></i>
+        Xóa
+    </button>
+    <a asp-action="Create" asp-route-searchValue="@Model.SearchValue" asp-route-page="@Model.Page" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận xóa mặt hàng khỏi giỏ
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formRemoveCartItem" asp-action="RemoveCartItem" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Line.ProductID" />
+                    <input type="hidden" name="searchValue" value="@Model.SearchValue" />
+                    <input type="hidden" name="page" value="@Model.Page" />
+
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Bạn có chắc chắn muốn xóa mặt hàng sau khỏi giỏ hàng không?
+                    </div>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Tên hàng</dt>
+                        <dd class="col-sm-8">@Model.Line.ProductName</dd>
+
+                        <dt class="col-sm-4">ĐVT</dt>
+                        <dd class="col-sm-8">@Model.Line.Unit</dd>
+
+                        <dt class="col-sm-4">Số lượng</dt>
+                        <dd class="col-sm-8">@Model.Line.Quantity</dd>
+
+                        <dt class="col-sm-4">Giá bán</dt>
+                        <dd class="col-sm-8">@Model.Line.SalePrice.ToString("N0")</dd>
+
+                        <dt class="col-sm-4">Thành tiền</dt>
+                        <dd class="col-sm-8">@Model.Line.TotalPrice.ToString("N0")</dd>
+                    </dl>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

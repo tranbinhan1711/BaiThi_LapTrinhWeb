@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Xóa hình ảnh sản phẩm";
+}
+
+<div class="card card-danger card-outline mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Xác nhận xóa hình ảnh</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa hình ảnh này không?
+        </div>
+
+        <h5>Thông tin hình ảnh:</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 150px;">Sản phẩm:</th>
+                        <td>Sản phẩm 1</td>
+                    </tr>
+                    <tr>
+                        <th>Tiêu đề:</th>
+                        <td>Hình ảnh 1</td>
+                    </tr>
+                    <tr>
+                        <th>Thứ tự:</th>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <th>Ảnh chính:</th>
+                        <td><span class="badge bg-success">Có</span></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <div class="text-center border rounded p-3">
+                    <img src="https://via.placeholder.com/400x300?text=Photo+to+Delete" class="img-fluid" alt="Photo to Delete">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <form onsubmit="event.preventDefault()" style="display: inline;">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Xác nhận xóa
+            </button>
+        </form>
+        <a href="~/Product/ListPhoto/1" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Hủy bỏ
+        </a>
+    </div>
+</div>

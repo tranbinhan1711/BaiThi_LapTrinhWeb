@@ -1,0 +1,71 @@
+@model Product
+@{
+    ViewData["Title"] = "Chi tiết mặt hàng";
+    var categoryName = ViewBag.CategoryName as string;
+    var supplierName = ViewBag.SupplierName as string;
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                <h3 class="card-title">@Model.ProductName</h3>
+                @if (Model.IsSelling)
+                {
+                    <span class="badge text-bg-success">Đang bán</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-secondary">Ngừng bán</span>
+                }
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr class="border-bottom">
+                            <td class="bg-light fw-semibold text-muted ps-4" style="width: 250px;">Mã mặt hàng</td>
+                            <td class="ps-4 fw-bold text-dark">@Model.ProductID</td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <td class="bg-light fw-semibold text-muted ps-4">Loại hàng</td>
+                            <td class="ps-4">@(categoryName ?? "-")</td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <td class="bg-light fw-semibold text-muted ps-4">Nhà cung cấp</td>
+                            <td class="ps-4">@(supplierName ?? "-")</td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <td class="bg-light fw-semibold text-muted ps-4">Giá bán</td>
+                            <td class="ps-4"><h4 class="mb-0 fw-bold text-primary">@Model.Price.ToString("N0") ₫</h4></td>
+                        </tr>
+                        <tr class="border-bottom">
+                            <td class="bg-light fw-semibold text-muted ps-4">Đơn vị tính</td>
+                            <td class="ps-4">@Model.Unit</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-semibold text-muted ps-4 align-top">Mô tả</td>
+                            <td class="ps-4">@Model.ProductDescription</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <a asp-action="Edit" asp-route-id="@Model.ProductID" class="btn btn-primary">Sửa</a>
+                <a href="~/Product" class="btn btn-secondary">Danh sách</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @{
+            var dtlPhoto = ProductPhotos.ResolveVirtualPath(Model.Photo, Model.ProductName);
+        }
+        @if (!string.IsNullOrWhiteSpace(dtlPhoto))
+        {
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="@Url.Content(dtlPhoto)" class="img-fluid img-thumbnail" alt="" />
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,220 @@
+@model OrderDetailPageModel
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    var o = Model.Order;
+    var details = Model.Details;
+
+    string StatusAlertClass() => o.Status switch
+    {
+        OrderStatusEnum.Completed => "success",
+        OrderStatusEnum.Rejected or OrderStatusEnum.Cancelled => "danger",
+        OrderStatusEnum.New => "warning",
+        OrderStatusEnum.Shipping => "primary",
+        OrderStatusEnum.Accepted => "info",
+        _ => "secondary"
+    };
+
+    string StatusBannerText()
+    {
+        var desc = o.Status.GetDescription();
+        return o.Status switch
+        {
+            OrderStatusEnum.Completed when o.FinishedTime.HasValue =>
+                $"{desc} lúc {o.FinishedTime:dd/MM/yyyy HH:mm}",
+            OrderStatusEnum.Rejected when o.FinishedTime.HasValue =>
+                $"{desc} lúc {o.FinishedTime:dd/MM/yyyy HH:mm}",
+            OrderStatusEnum.Cancelled when o.FinishedTime.HasValue =>
+                $"{desc} lúc {o.FinishedTime:dd/MM/yyyy HH:mm}",
+            OrderStatusEnum.Accepted when o.AcceptTime.HasValue =>
+                $"{desc} — nhận đơn lúc {o.AcceptTime:dd/MM/yyyy HH:mm}",
+            OrderStatusEnum.Shipping when o.ShippedTime.HasValue =>
+                $"{desc} — bàn giao shipper lúc {o.ShippedTime:dd/MM/yyyy HH:mm}",
+            _ => desc
+        };
+    }
+
+    decimal total = details.Sum(d => d.TotalPrice);
+}
+
+@section PageToolBar {
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-gear me-1"></i>
+            Xử lý đơn hàng
+        </button>
+        <ul class="dropdown-menu">
+            @if (o.Status == OrderStatusEnum.New)
+            {
+                <li><a class="dropdown-item open-modal" href="@Url.Content($"~/Order/Accept/{o.OrderID}")">Duyệt đơn hàng</a></li>
+                <li><a class="dropdown-item text-danger open-modal" href="@Url.Content($"~/Order/Reject/{o.OrderID}")">Từ chối đơn hàng</a></li>
+                <li><a class="dropdown-item text-danger open-modal" href="@Url.Content($"~/Order/Cancel/{o.OrderID}")">Hủy đơn hàng</a></li>
+            }
+            @if (o.Status == OrderStatusEnum.Accepted)
+            {
+                <li><a class="dropdown-item open-modal" href="@Url.Content($"~/Order/Shipping/{o.OrderID}")">Chuyển giao hàng</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger open-modal" href="@Url.Content($"~/Order/Cancel/{o.OrderID}")">Hủy đơn hàng</a></li>
+            }
+            @if (o.Status == OrderStatusEnum.Shipping)
+            {
+                <li><a class="dropdown-item open-modal" href="@Url.Content($"~/Order/Finish/{o.OrderID}")">Hoàn tất đơn hàng</a></li>
+            }
+            @if (o.Status is OrderStatusEnum.Completed or OrderStatusEnum.Rejected or OrderStatusEnum.Cancelled)
+            {
+                <li><span class="dropdown-item text-muted disabled">Không còn thao tác chuyển trạng thái</span></li>
+            }
+        </ul>
+    </div>
+
+    <a href="@Url.Content($"~/Order/Delete/{o.OrderID}")" class="btn btn-danger ms-1 open-modal">
+        <i class="bi bi-trash"></i>
+        Xóa
+    </a>
+
+    <a href="~/Order" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alert alert-@StatusAlertClass() d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill fs-4 me-2"></i>
+    <div>
+        <strong>Trạng thái đơn hàng:</strong>
+        @StatusBannerText()
+    </div>
+</div>
+
+<div class="card card-primary card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-receipt me-2"></i>Thông tin đơn hàng</h5>
+    </div>
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Mã đơn hàng</div>
+            <div class="col-md-3">@o.OrderID</div>
+            <div class="col-md-3 fw-bold">Ngày lập</div>
+            <div class="col-md-3">@o.OrderTime.ToString("dd/MM/yyyy HH:mm")</div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 fw-bold">Nhân viên phụ trách</div>
+            <div class="col-md-3">@(string.IsNullOrEmpty(o.EmployeeName) ? "—" : o.EmployeeName)</div>
+            <div class="col-md-3 fw-bold">Ngày nhận đơn</div>
+            <div class="col-md-3">@(o.AcceptTime.HasValue ? o.AcceptTime.Value.ToString("dd/MM/yyyy HH:mm") : "—")</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-info card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-person me-2"></i>Thông tin khách hàng</h5>
+    </div>
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Khách hàng</div>
+            <div class="col-md-3">@o.CustomerName</div>
+            <div class="col-md-3 fw-bold">Tên giao dịch</div>
+            <div class="col-md-3">@o.CustomerContactName</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Email</div>
+            <div class="col-md-9">@o.CustomerEmail</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Điện thoại</div>
+            <div class="col-md-9">@(string.IsNullOrEmpty(o.CustomerPhone) ? "—" : o.CustomerPhone)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 fw-bold">Địa chỉ</div>
+            <div class="col-md-9">@(string.IsNullOrEmpty(o.CustomerAddress) ? "—" : o.CustomerAddress)</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-success card-outline mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-truck me-2"></i>Thông tin giao hàng</h5>
+    </div>
+    <div class="card-body ps-4 pe-4">
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Người giao hàng</div>
+            <div class="col-md-3">@(string.IsNullOrEmpty(o.ShipperName) ? "—" : o.ShipperName)</div>
+            <div class="col-md-3 fw-bold">Điện thoại</div>
+            <div class="col-md-3">@(string.IsNullOrEmpty(o.ShipperPhone) ? "—" : o.ShipperPhone)</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Địa chỉ giao hàng</div>
+            <div class="col-md-9">@(string.IsNullOrEmpty(o.DeliveryAddress) ? "—" : o.DeliveryAddress)</div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 fw-bold">Tỉnh / Thành</div>
+            <div class="col-md-9">@(string.IsNullOrEmpty(o.DeliveryProvince) ? "—" : o.DeliveryProvince)</div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-secondary card-outline">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-box-seam me-2"></i>Danh sách mặt hàng</h5>
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>STT</th>
+                    <th>Tên hàng</th>
+                    <th>ĐVT</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ var i = 1; }
+                @foreach (var line in details)
+                {
+                    <tr>
+                        <td class="text-center">@(i++)</td>
+                        <td>@line.ProductName</td>
+                        <td class="text-center">@line.Unit</td>
+                        <td class="text-center">@line.Quantity</td>
+                        <td class="text-end">@line.SalePrice.ToString("N0")</td>
+                        <td class="text-end">@line.TotalPrice.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">Tổng cộng</th>
+                    <th class="text-end">@total.ToString("N0")</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card-body .row {
+            border-bottom: 1px dotted #646464;
+        }
+        .card-body .row:last-child {
+            border-bottom: none;
+        }
+    </style>
+}

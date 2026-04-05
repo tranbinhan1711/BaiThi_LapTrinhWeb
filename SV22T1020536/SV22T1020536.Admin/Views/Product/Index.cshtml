@@ -1,0 +1,83 @@
+@{
+    ViewBag.Title = "Quản lý Mặt hàng";
+    var categories = ViewBag.Categories as IList<Category> ?? new List<Category>();
+    var suppliers = ViewBag.Suppliers as IList<Supplier> ?? new List<Supplier>();
+}
+@section PageToolBar {
+    <a href="~/Product/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>
+        Bổ sung
+    </a>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="formSearch" action="~/Product/Search" method="get" data-target="searchResult">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Loại hàng</label>
+                    <select name="categoryID" class="form-select">
+                        <option value="0">-- Tất cả --</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.CategoryID">@c.CategoryName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select name="supplierID" class="form-select">
+                        <option value="0">-- Tất cả --</option>
+                        @foreach (var s in suppliers)
+                        {
+                            <option value="@s.SupplierID">@s.SupplierName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Khoảng giá</label>
+                    <div class="input-group">
+                        <input type="text" name="minPrice" class="form-control money-input" placeholder="Từ" />
+                        <span class="input-group-text">-</span>
+                        <input type="text" name="maxPrice" class="form-control money-input" placeholder="Đến" />
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Tên mặt hàng</label>
+                    <div class="input-group">
+                        <input id="searchValue" name="searchValue" type="text"
+                               class="form-control"
+                               placeholder="Tên mặt hàng..." autofocus />
+                        <button type="submit" class="btn btn-info d-flex align-items-center">
+                            <i class="bi bi-search me-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="searchResult"></div>
+
+@section Scripts {
+    <script>
+        function doSearch(page) {
+            paginationSearch(null, document.getElementById("formSearch"), page);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            doSearch(1);
+
+            const formSearch = document.getElementById("formSearch");
+            if (formSearch) {
+                formSearch.addEventListener("submit", function (e) {
+                    paginationSearch(e, this, 1);
+                });
+            }
+        });
+    </script>
+}

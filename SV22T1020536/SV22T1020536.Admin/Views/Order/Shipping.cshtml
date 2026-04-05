@@ -1,0 +1,26 @@
+@model OrderShippingModalModel
+@{
+    Layout = null;
+}
+<form asp-controller="Order" asp-action="Shipping" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.OrderId" />
+    <div class="modal-header text-bg-info">
+        <strong class="modal-title">Chọn người giao hàng</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+                <label class="form-label">Người giao hàng</label>
+                <select name="shipperID" class="form-select" asp-items="Model.ShipperOptions" required></select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-bicycle"></i> Giao hàng
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+    </div>
+</form>

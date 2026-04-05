@@ -1,0 +1,120 @@
+@model List<CartItemViewModel>
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    var total = Model.Sum(x => x.Amount);
+}
+
+<div class="breadcrumb-card">
+    <div class="breadcrumb">Trang chủ / Giỏ hàng</div>
+</div>
+
+<div class="page-card">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="feature-ico" style="background:rgba(37,99,235,.08); color:#2563eb">
+            <i class="bi bi-cart4"></i>
+        </div>
+        <div>
+            <div style="font-weight:900;font-size:20px">Giỏ hàng của bạn</div>
+            <div class="text-muted" style="margin-top:4px">
+                Kiểm tra sản phẩm và tiến hành đặt hàng khi sẵn sàng.
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="cart-empty-card">
+            <div class="cart-empty-icon">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <div class="cart-empty-text">Giỏ hàng của bạn đang trống.</div>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-shop-primary cart-empty-btn">
+                <i class="bi bi-bag me-1"></i>
+                Mua sắm ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-table-wrap">
+            <table class="table table-bordered align-middle bg-white">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th style="width:140px">Đơn giá</th>
+                        <th style="width:180px">Số lượng</th>
+                        <th style="width:160px">Thành tiền</th>
+                        <th style="width:110px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <div class="cart-thumb">
+                                        @{
+                                            var cartPhoto = ProductPhotos.ResolveVirtualPath(item.Photo, item.ProductName);
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(cartPhoto))
+                                        {
+                                            <img src="@Url.Content(cartPhoto)"
+                                                 alt="@item.ProductName"
+                                                 onerror="this.onerror=null; this.outerHTML='<div class=&quot;text-muted&quot;><i class=&quot;bi bi-image&quot;></i></div>';" />
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:900">@item.ProductName</div>
+                                        <div class="text-muted" style="font-size:13px">@item.Unit</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight:900">@item.Price.ToString("N0") đ</td>
+                            <td>
+                                <form asp-action="Update" method="post" class="d-flex gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productID" value="@item.ProductID" />
+                                    <input type="number" name="quantity" min="1" value="@item.Quantity" class="form-control form-control-sm" />
+                                    <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                                </form>
+                            </td>
+                            <td style="font-weight:900">@item.Amount.ToString("N0") đ</td>
+                            <td>
+                                <form asp-action="Remove" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productID" value="@item.ProductID" />
+                                    <button class="btn btn-sm btn-outline-danger w-100">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Tổng cộng</th>
+                        <th style="font-weight:900">@total.ToString("N0") đ</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <form asp-action="Clear" method="post">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-outline-danger">Xóa toàn bộ giỏ</button>
+            </form>
+            <a asp-controller="Order" asp-action="Checkout" class="btn btn-shop-primary">
+                <i class="bi bi-credit-card me-1"></i>
+                Đặt mua hàng
+            </a>
+        </div>
+    }
+</div>

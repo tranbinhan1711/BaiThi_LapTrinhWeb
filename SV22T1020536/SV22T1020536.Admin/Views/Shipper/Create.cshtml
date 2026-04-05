@@ -1,0 +1,40 @@
+@model Shipper
+@{
+    ViewData["Title"] = "Thêm người giao hàng";
+}
+
+<div class="card card-primary card-outline mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Thêm người giao hàng mới</h3>
+    </div>
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="ShipperName" class="form-label">Tên người giao hàng: <span class="text-danger">*</span></label>
+                        <input asp-for="ShipperName" class="form-control" />
+                        <span asp-validation-for="ShipperName" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="form-label">Điện thoại: <span class="text-danger">*</span></label>
+                        <input asp-for="Phone" class="form-control" type="tel" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Lưu thông tin
+            </button>
+            <a href="~/Shipper" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Hủy bỏ
+            </a>
+        </div>
+    </form>
+</div>

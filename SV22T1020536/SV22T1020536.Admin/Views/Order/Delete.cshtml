@@ -1,0 +1,24 @@
+@model int
+@{
+    Layout = null;
+}
+<form asp-controller="Order" asp-action="DeleteConfirm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model" />
+    <div class="modal-header text-bg-danger">
+        <strong class="modal-title">Xóa đơn hàng</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="alert alert-danger d-flex align-items-center mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            Bạn có chắc chắn muốn xóa đơn hàng này không? Thao tác không thể hoàn tác.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-check"></i> Xóa
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+    </div>
+</form>

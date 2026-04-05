@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Access denied";
+    Layout = null;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Access denied</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" user-scalable=yes />
+    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.css" />
+</head>
+<body class="bg-body-secondary">
+    <div class="container mt-5">
+        <div class="alert alert-warning">
+            <b>Bạn không có quyền truy cập trang này.</b>
+        </div>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">
+            Quay về đăng nhập
+        </a>
+    </div>
+</body>
+</html>
+

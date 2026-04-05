@@ -1,0 +1,44 @@
+@{
+    ViewBag.Title = "Quản lý Nhà cung cấp";
+}
+@section PageToolBar {
+    <a href="~/Supplier/Create" class="btn btn-primary d-flex align-items-center ms-1">
+        <i class="bi bi-plus-circle me-1"></i>
+        Bổ sung
+    </a>
+}
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="formSearch" action="~/Supplier/Search" method="get" data-target="searchResult">
+            <div class="input-group">
+                <input id="searchValue" name="searchValue" type="text"
+                       class="form-control"
+                       placeholder="Nhập tên, điện thoại, email hoặc địa chỉ..." autofocus />
+                <button type="submit" class="btn btn-info d-flex align-items-center">
+                    <i class="bi bi-search me-1"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="searchResult"></div>
+
+@section Scripts {
+    <script>
+        function doSearch(page) {
+            paginationSearch(null, document.getElementById("formSearch"), page);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            doSearch(1);
+
+            const formSearch = document.getElementById("formSearch");
+            if (formSearch) {
+                formSearch.addEventListener("submit", function (e) {
+                    paginationSearch(e, this, 1);
+                });
+            }
+        });
+    </script>
+}

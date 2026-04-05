@@ -1,0 +1,169 @@
+@{
+    var currentCustomer = ShopContext.GetCurrentCustomer(Context);
+    var cartCount = ShopContext.GetCart(Context).Sum(x => x.Quantity);
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SV22T1020536.Shop</title>
+    <script type="importmap"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SV22T1020536.Shop.styles.css" asp-append-version="true" />
+</head>
+<body class="shop-body">
+    <header>
+        <div class="shop-topbar">
+            <div class="container shop-container">
+                <div class="d-flex align-items-center gap-4">
+                    <a class="shop-brand" asp-controller="Home" asp-action="Index">
+                        <span class="shop-brand-mark">L</span>
+                        <span>TBA Shop</span>
+                    </a>
+
+                    <div class="shop-search">
+                        <form asp-controller="Product" asp-action="Index" method="get">
+                            <input type="text"
+                                   name="searchValue"
+                                   class="form-control"
+                                   placeholder="Tìm kiếm sản phẩm..." />
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="shop-top-links ms-auto">
+                        <a class="shop-top-link" asp-controller="Cart" asp-action="Index">
+                            <i class="bi bi-cart"></i>
+                            <span>Giỏ hàng</span>
+                            @if (cartCount > 0)
+                            {
+                                <span class="badge bg-info text-dark">@cartCount</span>
+                            }
+                        </a>
+
+                        @if (currentCustomer == null)
+                        {
+                            <a class="shop-top-link" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-person"></i>
+                                Đăng nhập
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="shop-user-wrap dropdown">
+                                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i>
+                                    @currentCustomer.ContactName
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                            <i class="bi bi-person"></i>
+                                            Tài khoản
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Order" asp-action="History">
+                                            <i class="bi bi-receipt"></i>
+                                            Đơn hàng
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                                            <i class="bi bi-key"></i>
+                                            Đổi mật khẩu
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right"></i>
+                                            Đăng xuất
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="shop-navbar">
+            <div class="container shop-container d-flex align-items-center gap-2">
+                <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+                <a asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
+                <a asp-controller="Home" asp-action="About">Giới thiệu</a>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="shop-main">
+        <div class="container shop-container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="shop-footer">
+        <div class="container shop-container">
+            <div class="row">
+                <div class="col-md-3 footer-col">
+                    <div class="footer-title">
+                        <span class="shop-brand-mark" style="background:#0ea5e9;">L</span>
+                        <span>TBA Shop</span>
+                    </div>
+                    <div class="mt-2" style="font-size:14px;color:rgba(255,255,255,.7)">
+                        Chuyển cung cấp các sản phẩm chất lượng với giá cả hợp lý.<br />
+                        Cam kết hàng chính hãng, giao hàng nhanh chóng.
+                    </div>
+                </div>
+
+                <div class="col-md-3 footer-col">
+                    <div style="font-weight:900;margin-bottom:10px">Liên kết</div>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                        <li><a asp-controller="Product" asp-action="Index">Sản phẩm</a></li>
+                        <li><a asp-controller="Home" asp-action="About">Giới thiệu</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact">Liên hệ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 footer-col">
+                    <div style="font-weight:900;margin-bottom:10px">Hỗ trợ</div>
+                    <ul>
+                        <li>Chính sách trả trả</li>
+                        <li>Câu hỏi thường gặp</li>
+                        <li>Hướng dẫn mua hàng</li>
+                        <li>Phương thức thanh toán</li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 footer-col">
+                    <div style="font-weight:900;margin-bottom:10px">Liên hệ</div>
+                    <ul>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i>123 Nguyễn Văn Linh, Đà Nẵng</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i>0123.456.789</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i>contact@lhkshop.vn</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bottom text-center">
+                &copy; 2026 - TBA Shop. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

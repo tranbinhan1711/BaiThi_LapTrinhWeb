@@ -1,0 +1,27 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Đặt mua hàng";
+}
+
+<h3>Thông tin giao hàng</h3>
+<form asp-action="Checkout" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="col-md-6">
+        <label asp-for="DeliveryProvince" class="form-label"></label>
+        <select asp-for="DeliveryProvince" asp-items="Model.ProvinceOptions" class="form-select"></select>
+        <span asp-validation-for="DeliveryProvince" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DeliveryAddress" class="form-label"></label>
+        <input asp-for="DeliveryAddress" class="form-control" />
+        <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Xác nhận đặt hàng</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

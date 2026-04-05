@@ -1,0 +1,182 @@
+@model OrderViewInfo
+@{
+    ViewData["Title"] = "Theo dõi đơn hàng";
+    var details = ViewBag.Details as List<OrderDetailViewInfo> ?? new List<OrderDetailViewInfo>();
+}
+
+<div class="breadcrumb-card">
+    <div class="breadcrumb">Trang chủ / Đơn hàng / #@Model.OrderID</div>
+</div>
+
+<div class="page-card">
+    @{
+        var isCompleted = Model.Status == OrderStatusEnum.Completed;
+        bool done2 = Model.Status is OrderStatusEnum.Accepted or OrderStatusEnum.Shipping or OrderStatusEnum.Completed;
+        bool done3 = Model.Status is OrderStatusEnum.Shipping or OrderStatusEnum.Completed;
+        bool done4 = Model.Status == OrderStatusEnum.Completed;
+    }
+
+    <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+        <div>
+            <div class="text-muted fw-bold">MÃ ĐƠN HÀNG</div>
+            <div style="font-weight:900;font-size:26px;line-height:1.1">Đơn hàng #@Model.OrderID</div>
+        </div>
+
+        @if (isCompleted)
+        {
+            <div class="btn order-status-pill">
+                Đơn hàng đã hoàn tất
+            </div>
+        }
+    </div>
+
+    <div class="order-progress mb-4">
+        <div class="order-step done">
+            <div class="order-step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="order-step-label">Đã đặt</div>
+        </div>
+        <div class="order-progress-line @(done2 ? "done" : "")"></div>
+        <div class="order-step @(done2 ? "done" : "")">
+            <div class="order-step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="order-step-label">Đã duyệt</div>
+        </div>
+        <div class="order-progress-line @(done3 ? "done" : "")"></div>
+        <div class="order-step @(done3 ? "done" : "")">
+            <div class="order-step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="order-step-label">Đang giao</div>
+        </div>
+        <div class="order-progress-line @(done4 ? "done" : "")"></div>
+        <div class="order-step @(done4 ? "done" : "")">
+            <div class="order-step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="order-step-label">Hoàn tất</div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-2">
+        <div class="col-lg-6">
+            <div class="order-info-card">
+                <div class="order-info-title">Thông tin đơn hàng</div>
+                <div class="order-info-body">
+                    <div class="order-info-row">
+                        <div class="order-info-label">Thời gian xử lý đơn</div>
+                        <div class="order-info-value">@Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Ngày đặt</div>
+                        <div class="order-info-value">@Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Ngày duyệt</div>
+                        <div class="order-info-value">@(Model.AcceptTime.HasValue ? Model.AcceptTime.Value.ToString("dd/MM/yyyy HH:mm") : "—")</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Ngày giao hàng</div>
+                        <div class="order-info-value">@(Model.ShippedTime.HasValue ? Model.ShippedTime.Value.ToString("dd/MM/yyyy HH:mm") : "—")</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Ngày hoàn tất</div>
+                        <div class="order-info-value">@(Model.FinishedTime.HasValue ? Model.FinishedTime.Value.ToString("dd/MM/yyyy HH:mm") : "—")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="order-info-card">
+                <div class="order-info-title">Thông tin giao hàng</div>
+                <div class="order-info-body">
+                    <div class="order-info-row">
+                        <div class="order-info-label">Tỉnh/Thành</div>
+                        <div class="order-info-value">@Model.DeliveryProvince</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Địa chỉ</div>
+                        <div class="order-info-value">@Model.DeliveryAddress</div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Người giao</div>
+                        <div class="order-info-value">
+                            @(string.IsNullOrWhiteSpace(Model.ShipperName)
+                                ? "—"
+                                : $"{Model.ShipperName}{(string.IsNullOrWhiteSpace(Model.ShipperPhone) ? "" : $" ({Model.ShipperPhone})")}")
+                        </div>
+                    </div>
+                    <div class="order-info-row">
+                        <div class="order-info-label">Trạng thái</div>
+                        <div class="order-info-value">
+                            <span class="order-status-text">@Model.Status.GetDescription()</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Status == OrderStatusEnum.New || Model.Status == OrderStatusEnum.Accepted)
+    {
+        <form asp-action="Cancel" method="post" class="mt-4 text-end">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.OrderID" />
+            <button class="btn btn-outline-danger">Hủy đơn hàng</button>
+        </form>
+    }
+
+    @if (details.Any())
+    {
+        var total = details.Sum(x => x.TotalPrice);
+        <div class="mt-4 order-table-wrap">
+            <div class="order-table-title">Sản phẩm</div>
+            <table class="table order-table">
+                <thead>
+                    <tr>
+                        <th>SẢN PHẨM</th>
+                        <th style="width:160px">ĐƠN GIÁ</th>
+                        <th style="width:90px">SL</th>
+                        <th style="width:180px">THÀNH TIỀN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in details)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <div class="order-thumb">
+                                        @{
+                                            var odPhoto = ProductPhotos.ResolveVirtualPath(item.Photo, item.ProductName);
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(odPhoto))
+                                        {
+                                            <img src="@Url.Content(odPhoto)"
+                                                 alt="@item.ProductName"
+                                                 onerror="this.onerror=null; this.outerHTML='<div class=&quot;text-muted&quot;><i class=&quot;bi bi-image&quot;></i></div>';" />
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:900">@item.ProductName</div>
+                                        <div class="text-muted" style="font-size:13px">@item.Unit</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight:900">@item.SalePrice.ToString("N0") đ</td>
+                            <td style="font-weight:900">@item.Quantity</td>
+                            <td style="font-weight:900">@item.TotalPrice.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Tổng cộng</th>
+                        <th style="font-weight:900">@total.ToString("N0") đ</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+</div>

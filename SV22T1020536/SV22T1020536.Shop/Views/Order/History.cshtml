@@ -1,0 +1,66 @@
+@model SV22T1020536.Models.Common.PagedResult<OrderViewInfo>
+@{
+    ViewData["Title"] = "Lịch sử mua hàng";
+}
+
+<div class="breadcrumb-card">
+    <div class="breadcrumb">Trang chủ / Đơn hàng của tôi</div>
+</div>
+
+<div class="page-card">
+    <div class="d-flex align-items-start gap-3 mb-3">
+        <div class="feature-ico" style="background:rgba(37,99,235,.08); color:#2563eb">
+            <i class="bi bi-receipt"></i>
+        </div>
+        <div class="w-100">
+            <div style="font-weight:900;font-size:22px">Đơn hàng của tôi</div>
+            <div class="text-muted" style="margin-top:4px">
+                Kiểm tra sản phẩm và tiến hành đặt hàng khi sẵn sàng.
+            </div>
+        </div>
+    </div>
+
+    <div class="order-tabs d-flex gap-2 flex-wrap mb-4">
+        @{
+            var selected = (int)(ViewBag.SelectedStatus ?? 0);
+        }
+        <a class="order-tab @(selected==0 ? "active" : "")" href="@Url.Action("History", new { status = 0 })">Tất cả</a>
+        <a class="order-tab @(selected==(int)OrderStatusEnum.Accepted ? "active" : "")" href="@Url.Action("History", new { status = (int)OrderStatusEnum.Accepted })">Đã duyệt</a>
+        <a class="order-tab @(selected==(int)OrderStatusEnum.Shipping ? "active" : "")" href="@Url.Action("History", new { status = (int)OrderStatusEnum.Shipping })">Đang giao</a>
+        <a class="order-tab @(selected==(int)OrderStatusEnum.Completed ? "active" : "")" href="@Url.Action("History", new { status = (int)OrderStatusEnum.Completed })">Hoàn tất</a>
+        <a class="order-tab @(selected==(int)OrderStatusEnum.Cancelled ? "active" : "")" href="@Url.Action("History", new { status = (int)OrderStatusEnum.Cancelled })">Đã hủy</a>
+        <a class="order-tab @(selected==(int)OrderStatusEnum.Rejected ? "active" : "")" href="@Url.Action("History", new { status = (int)OrderStatusEnum.Rejected })">Bị từ chối</a>
+    </div>
+
+    @if (!Model.DataItems.Any())
+    {
+        <div class="alert alert-info mb-0">Bạn chưa có đơn hàng nào.</div>
+    }
+    else
+    {
+        <div class="order-list d-flex flex-column gap-3">
+            @foreach (var order in Model.DataItems)
+            {
+                <div class="order-item">
+                    <div class="order-item-top">
+                        <div>
+                            <div class="order-code">Đơn hàng #@order.OrderID</div>
+                            <div class="order-desc">@order.Status.GetDescription()</div>
+                        </div>
+                        <div class="order-date">
+                            @order.OrderTime.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    <div class="order-item-bottom">
+                        <div class="text-muted">
+                            @(order.DeliveryAddress), @(order.DeliveryProvince)
+                        </div>
+                        <a asp-action="Detail" asp-route-id="@order.OrderID" class="btn btn-outline-primary order-detail-btn">
+                            Chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

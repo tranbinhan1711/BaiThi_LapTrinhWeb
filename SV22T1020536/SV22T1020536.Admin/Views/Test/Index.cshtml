@@ -1,0 +1,67 @@
+﻿@model SV22T1020536.Models.Common.PagedResult<SV22T1020536.Models.Partner.Customer>
+@{
+    ViewData["Title"] = "Test PhÃ¢n Trang KhÃ¡ch HÃ ng";
+}
+
+<div class="container mt-4">
+    <h2>Danh sÃ¡ch khÃ¡ch hÃ ng (Test PhÃ¢n Trang)</h2>
+
+    <form method="get" action="/Test/Index" class="mb-3">
+        <div class="row">
+            <div class="col-md-9">
+                <input type="text" name="SearchValue" class="form-control" placeholder="TÃ¬m tÃªn khÃ¡ch hÃ ng hoáº·c tÃªn giao dá»‹ch..." value="@Context.Request.Query["SearchValue"]" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">TÃ¬m kiáº¿m</button>
+            </div>
+        </div>
+        <input type="hidden" name="PageSize" value="@Model.PageSize" />
+    </form>
+
+    <p>Tá»•ng sá»‘ dÃ²ng tÃ¬m tháº¥y: <strong>@Model.RowCount</strong></p>
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>ID</th>
+                <th>TÃªn khÃ¡ch hÃ ng</th>
+                <th>TÃªn giao dá»‹ch</th>
+                <th>Äá»‹a chá»‰</th>
+                <th>Äiá»‡n thoáº¡i</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.DataItems)
+            {
+                <tr>
+                    <td>@item.CustomerID</td>
+                    <td>@item.CustomerName</td>
+                    <td>@item.ContactName</td>
+                    <td>@item.Address (@item.Province)</td>
+                    <td>@item.Phone</td>
+                    <td>@item.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            @foreach (var pageItem in Model.GetDisplayPages())
+            {
+                if (pageItem.Page == 0)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+                else
+                {
+                    <li class="page-item @(pageItem.IsCurrent ? "active" : "")">
+                        <a class="page-link" href="/Test/Index?Page=@pageItem.Page&SearchValue=@Context.Request.Query["SearchValue"]&PageSize=@Model.PageSize">@pageItem.Page</a>
+                    </li>
+                }
+            }
+        </ul>
+    </nav>
+</div>

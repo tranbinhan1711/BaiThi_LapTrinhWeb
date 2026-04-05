@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Xóa thuộc tính sản phẩm";
+}
+
+<div class="card card-danger card-outline mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Xác nhận xóa thuộc tính</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa thuộc tính này không?
+        </div>
+
+        <h5>Thông tin thuộc tính:</h5>
+        <table class="table table-bordered">
+            <tr>
+                <th style="width: 200px;">Sản phẩm:</th>
+                <td>Sản phẩm 1</td>
+            </tr>
+            <tr>
+                <th>Tên thuộc tính:</th>
+                <td>Thuộc tính 1</td>
+            </tr>
+            <tr>
+                <th>Giá trị:</th>
+                <td>Giá trị 1</td>
+            </tr>
+            <tr>
+                <th>Thứ tự hiển thị:</th>
+                <td>1</td>
+            </tr>
+        </table>
+    </div>
+    <div class="card-footer">
+        <form onsubmit="event.preventDefault()" style="display: inline;">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Xác nhận xóa
+            </button>
+        </form>
+        <a href="~/Product/ListAttributes/1" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Hủy bỏ
+        </a>
+    </div>
+</div>

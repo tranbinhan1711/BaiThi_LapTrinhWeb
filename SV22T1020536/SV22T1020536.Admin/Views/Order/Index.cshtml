@@ -1,0 +1,90 @@
+@{
+    ViewBag.Title = "Quản lý Đơn hàng";
+}
+@section PageToolBar {
+    <a href="~/Order/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>
+        Lập đơn hàng mới
+    </a>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-0 me-2" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-0 me-2" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="formSearch"
+              method="get"
+              action="~/Order/Search"
+              data-target="searchResult">
+
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái đơn hàng</label>
+                    <select name="status" class="form-select">
+                        <option value="0">-- Tất cả --</option>
+                        <option value="1">Đơn hàng vừa tạo</option>
+                        <option value="2">Đơn hàng đã được duyệt</option>
+                        <option value="3">Đơn hàng đang được vận chuyển</option>
+                        <option value="4">Đơn hàng đã hoàn tất</option>
+                        <option value="-1">Đơn hàng đã bị hủy</option>
+                        <option value="-2">Đơn hàng bị từ chối</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Thời gian lập đơn hàng</label>
+                    <div class="input-group">
+                        <input type="date" name="dateFrom" class="form-control" />
+                        <span class="input-group-text">-</span>
+                        <input type="date" name="dateTo" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label">Tên khách hàng / tìm kiếm</label>
+                    <div class="input-group">
+                        <input type="text"
+                               name="searchValue"
+                               class="form-control"
+                               placeholder="Tên khách hàng, SĐT, địa chỉ..." autofocus />
+                        <button type="submit" class="btn btn-info d-flex align-items-center">
+                            <i class="bi bi-search me-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="searchResult"></div>
+
+@section Scripts {
+    <script>
+        function doSearch(page) {
+            paginationSearch(null, document.getElementById("formSearch"), page);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            doSearch(1);
+
+            const formSearch = document.getElementById("formSearch");
+            if (formSearch) {
+                formSearch.addEventListener("submit", function (e) {
+                    paginationSearch(e, this, 1);
+                });
+            }
+        });
+    </script>
+}

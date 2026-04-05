@@ -1,0 +1,136 @@
+@model SV22T1020536.Shop.ViewModels.HomePageViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="hero">
+    <div class="hero-inner">
+        <div>
+            <div class="hero-badge">
+                <i class="bi bi-tags-fill"></i>
+                Siêu sale
+            </div>
+            <div class="hero-title">
+                Giảm giá lên đến<br />
+                <span style="color:#fff; text-shadow:0 4px 20px rgba(0,0,0,.18)">50%</span>
+            </div>
+            <div class="hero-sub">
+                Hàng ngàn sản phẩm đang chờ bạn – số lượng có hạn.
+            </div>
+            <div class="hero-cta">
+                <a class="btn" asp-controller="Product" asp-action="Index">
+                    Xem ưu đãi
+                </a>
+            </div>
+        </div>
+        <div class="hero-right">
+            <div class="percent-mark">%</div>
+        </div>
+    </div>
+</div>
+
+<div class="feature-row">
+    <div class="feature-card">
+        <div class="feature-ico">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div>
+            <h6>Miễn phí giao hàng</h6>
+            <p>Đơn từ 500.000đ – Toàn quốc</p>
+        </div>
+    </div>
+    <div class="feature-card">
+        <div class="feature-ico" style="background:rgba(34,197,94,.08); color:#16a34a;">
+            <i class="bi bi-shield-check"></i>
+        </div>
+        <div>
+            <h6>Hàng chính hãng</h6>
+            <p>Bảo hành đầy đủ – Đổi trả trong 7 ngày</p>
+        </div>
+    </div>
+    <div class="feature-card">
+        <div class="feature-ico" style="background:rgba(245,158,11,.10); color:#f59e0b;">
+            <i class="bi bi-headset"></i>
+        </div>
+        <div>
+            <h6>Hỗ trợ 24/7</h6>
+            <p>Hotline & chat – Luôn sẵn sàng</p>
+        </div>
+    </div>
+</div>
+
+<div class="section-title">
+    <div>
+        <h4>Danh mục sản phẩm</h4>
+        <div class="underline"></div>
+    </div>
+</div>
+
+<div class="cat-grid">
+    <div class="grid">
+        @for (int i = 0; i < 9; i++)
+        {
+            var cat = i < Model.Categories.Count ? Model.Categories[i] : null;
+            <a class="text-decoration-none" asp-controller="Product" asp-action="Index" asp-route-categoryID="@(cat?.CategoryID ?? 0)">
+                <div class="cat-item">
+                    <div class="icon-box">
+                        <i class="bi bi-box"></i>
+                    </div>
+                    <span>@(cat?.CategoryName ?? "Danh mục")</span>
+                </div>
+            </a>
+        }
+    </div>
+</div>
+
+<div class="section-title">
+    <div>
+        <h4>Sản phẩm nổi bật</h4>
+        <div class="underline"></div>
+    </div>
+    <a class="right-link" asp-controller="Product" asp-action="Index">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+</div>
+
+<div class="product-grid">
+    @foreach (var p in Model.FeaturedProducts)
+    {
+        <div class="product-card">
+            <div class="product-img">
+                @{
+                    var featPhoto = ProductPhotos.ResolveVirtualPath(p.Photo, p.ProductName);
+                }
+                @if (!string.IsNullOrWhiteSpace(featPhoto))
+                {
+                    <img src="@Url.Content(featPhoto)"
+                         alt="@p.ProductName"
+                         onerror="this.onerror=null; this.outerHTML='<div class=&quot;text-center text-muted&quot;><i class=&quot;bi bi-image fs-1&quot;></i></div>';" />
+                }
+                else
+                {
+                    <div class="text-center text-muted">
+                        <i class="bi bi-image fs-1"></i>
+                    </div>
+                }
+            </div>
+            <div class="content">
+                <div class="name">@p.ProductName</div>
+                <div class="price">@p.Price.ToString("N0") đ</div>
+                <div class="unit">@p.Unit</div>
+                <div class="status">
+                    @(p.IsSelling ? "Còn hàng" : "Tạm ngừng")
+                </div>
+            </div>
+            <div class="actions">
+                <form asp-controller="Cart" asp-action="Add" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productID" value="@p.ProductID" />
+                    <button type="submit" class="btn btn-shop-primary w-100">
+                        <i class="bi bi-bag-plus me-1"></i>
+                        Vào giỏ
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+

@@ -1,0 +1,304 @@
+@model SV22T1020536.Admin.Models.OrderCreatePageModel
+@using System.Globalization
+@{
+    ViewBag.Title = "Lập đơn hàng";
+    var products = Model.Products;
+    var totalPages = products.PageSize > 0
+        ? Math.Max(1, (int)Math.Ceiling(products.RowCount / (double)products.PageSize))
+        : 1;
+    var hasPrev = Model.Page > 1;
+    var hasNext = Model.Page < totalPages;
+}
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card card-outline card-primary h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-search"></i>
+                    Lựa chọn hàng cần bán
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form method="get" asp-action="Create" asp-controller="Order" class="mb-3">
+                    <div class="input-group">
+                        <input class="form-control"
+                               name="searchValue"
+                               value="@Model.SearchValue"
+                               placeholder="Nhập tên mặt hàng cần tìm" autofocus />
+                        <input type="hidden" name="page" value="1" />
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success py-2">@TempData["Success"]</div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger py-2">@TempData["Error"]</div>
+                }
+
+                @foreach (var product in products.DataItems)
+                {
+                    <form asp-action="AddToCart" asp-controller="Order" method="post" class="border rounded p-2 mb-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="searchValue" value="@Model.SearchValue" />
+                        <input type="hidden" name="page" value="@Model.Page" />
+                        <input type="hidden" name="productId" value="@product.ProductID" />
+
+                        <strong>@product.ProductName</strong>
+                        @if (!product.IsSelling)
+                        {
+                            <span class="badge bg-secondary ms-1">Ngừng bán</span>
+                        }
+
+                        <div class="row mt-2">
+                            <div class="col-4">
+                                @{
+                                    var ordPhoto = ProductPhotos.ResolveVirtualPath(product.Photo, product.ProductName);
+                                }
+                                @if (!string.IsNullOrWhiteSpace(ordPhoto))
+                                {
+                                    <img src="@Url.Content(ordPhoto)"
+                                         class="img-fluid border"
+                                         style="max-height:100px"
+                                         alt=""
+                                         onerror="this.style.display='none'" />
+                                }
+                                else
+                                {
+                                    <div class="border rounded d-flex align-items-center justify-content-center bg-light text-muted"
+                                         style="height:100px">
+                                        <i class="bi bi-image fs-2"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-8">
+                                <div class="row g-2">
+                                    <div class="col-7">
+                                        <label class="form-label mb-0 small">Giá</label>
+                                        <input class="form-control form-control-sm"
+                                               name="salePrice"
+                                               type="number"
+                                               step="0.01"
+                                               min="0"
+                                               value="@product.Price.ToString(CultureInfo.InvariantCulture)" />
+                                    </div>
+                                    <div class="col-5">
+                                        <label class="form-label mb-0 small">SL</label>
+                                        <input type="number"
+                                               name="quantity"
+                                               min="1"
+                                               value="1"
+                                               class="form-control form-control-sm" />
+                                    </div>
+                                </div>
+
+                                @if (product.IsSelling)
+                                {
+                                    <button type="submit" class="btn btn-sm btn-primary mt-2 w-100">
+                                        <i class="bi bi-cart-plus"></i>
+                                        Thêm vào giỏ
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-secondary mt-2 w-100" disabled>
+                                        <i class="bi bi-cart-plus"></i>
+                                        Ngừng bán
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </form>
+                }
+
+                @if (products.DataItems.Count == 0)
+                {
+                    <div class="text-muted">Không có mặt hàng phù hợp.</div>
+                }
+            </div>
+
+            <div class="card-footer">
+                <ul class="pagination justify-content-between mb-0">
+                    <li class="page-item @(hasPrev ? "" : "disabled")">
+                        <a class="page-link" asp-action="Create" asp-route-searchValue="@Model.SearchValue" asp-route-page="@(Model.Page - 1)">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link small">@Model.Page / @totalPages</span>
+                    </li>
+                    <li class="page-item @(hasNext ? "" : "disabled")">
+                        <a class="page-link" asp-action="Create" asp-route-searchValue="@Model.SearchValue" asp-route-page="@(Model.Page + 1)">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-outline card-success">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-cart"></i>
+                            Danh sách mặt hàng đã chọn
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-success">
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th style="width:auto">Tên hàng</th>
+                                    <th class="text-center" style="width:100px">ĐVT</th>
+                                    <th class="text-center" style="width:110px">SL</th>
+                                    <th class="text-end" style="width:150px">Giá</th>
+                                    <th class="text-end" style="width:150px">Thành tiền</th>
+                                    <th style="width:100px"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var idx = 0;
+                                }
+                                @foreach (var line in Model.Cart)
+                                {
+                                    idx++;
+                                    <tr>
+                                        <td class="text-center">@idx</td>
+                                        <td>@line.ProductName</td>
+                                        <td class="text-center">@line.Unit</td>
+                                        <td class="text-center">
+                                            <form asp-action="UpdateCartItem" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="productId" value="@line.ProductID" />
+                                                <input type="hidden" name="searchValue" value="@Model.SearchValue" />
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <input type="hidden" name="salePrice" value="@line.SalePrice.ToString(CultureInfo.InvariantCulture)" />
+                                                <input type="number"
+                                                       name="quantity"
+                                                       min="1"
+                                                       value="@line.Quantity"
+                                                       class="form-control form-control-sm text-center"
+                                                       onchange="this.form.submit()" />
+                                            </form>
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="UpdateCartItem" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="productId" value="@line.ProductID" />
+                                                <input type="hidden" name="searchValue" value="@Model.SearchValue" />
+                                                <input type="hidden" name="page" value="@Model.Page" />
+                                                <input type="hidden" name="quantity" value="@line.Quantity" />
+                                                <input type="number"
+                                                       name="salePrice"
+                                                       step="0.01"
+                                                       min="0"
+                                                       value="@line.SalePrice.ToString(CultureInfo.InvariantCulture)"
+                                                       class="form-control form-control-sm text-end"
+                                                       onchange="this.form.submit()" />
+                                            </form>
+                                        </td>
+                                        <td class="text-end">@line.TotalPrice.ToString("N0")</td>
+                                        <td class="text-end text-nowrap">
+                                            <a class="btn btn-sm btn-danger"
+                                               title="Xóa dòng"
+                                               asp-action="RemoveCartItem"
+                                               asp-route-productId="@line.ProductID"
+                                               asp-route-searchValue="@Model.SearchValue"
+                                               asp-route-page="@Model.Page">
+                                                <i class="bi bi-dash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="5" class="text-end">Tổng cộng:</th>
+                                    <th class="text-end">@Model.CartTotal.ToString("N0")</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="text-end">
+                            <a class="btn btn-sm btn-danger mt-2"
+                               asp-action="ClearPosCart"
+                               asp-route-searchValue="@Model.SearchValue"
+                               asp-route-page="@Model.Page">
+                                <i class="bi bi-trash"></i>
+                                Xóa giỏ hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-outline card-info">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person"></i>
+                            Thông tin khách hàng &amp; nơi giao hàng
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form asp-action="PlaceOrder" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="searchValue" value="@Model.SearchValue" />
+                            <input type="hidden" name="page" value="@Model.Page" />
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label" asp-for="CustomerName"></label>
+                                <div class="col-md-10">
+                                    <input asp-for="CustomerName" class="form-control" placeholder="Nhập tên khách hàng" />
+                                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label" asp-for="DeliveryProvince"></label>
+                                <div class="col-md-10">
+                                    <select asp-for="DeliveryProvince" asp-items="Model.ProvinceOptions" class="form-select"></select>
+                                    <span asp-validation-for="DeliveryProvince" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label" asp-for="DeliveryAddress"></label>
+                                <div class="col-md-10">
+                                    <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Địa chỉ giao hàng"></textarea>
+                                    <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i>
+                                    Lập đơn hàng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
