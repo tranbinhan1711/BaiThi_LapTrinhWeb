@@ -8,12 +8,16 @@ using System.Security.Claims;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// Xác thực tài khoản nhân viên: đăng nhập, đăng ký, hồ sơ và mật khẩu.
+    /// </summary>
     public class AccountController : Controller
     {
         /// <summary>
-        /// Giao diá»‡n Ä‘Äƒng nháº­p vÃ o há»‡ thá»‘ng
+        /// Hiển thị form đăng nhập.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="returnUrl">URL chuyển về sau khi đăng nhập thành công.</param>
+        /// <returns>View đăng nhập.</returns>
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -21,11 +25,11 @@ namespace SV22T1020536.Admin.Controllers
             return View(new AdminLoginViewModel());
         }
         /// <summary>
-        /// Xá»­ lÃ½ Ä‘Äƒng nháº­p
+        /// Xử lý đăng nhập và thiết lập cookie xác thực.
         /// </summary>
-        /// <param name="email">Äá»‹a chá»‰ email Ä‘Äƒng nháº­p cá»§a ngÆ°á»i dÃ¹ng</param>
-        /// <param name="password">Máº­t kháº©u Ä‘Äƒng nháº­p</param>
-        /// <returns></returns>
+        /// <param name="model">Email và mật khẩu.</param>
+        /// <param name="returnUrl">URL chuyển về sau khi thành công.</param>
+        /// <returns>Chuyển hướng hoặc lại form nếu sai thông tin.</returns>
         [HttpPost]
         public async Task<IActionResult> Login(AdminLoginViewModel model, string? returnUrl = null)
         {
@@ -62,21 +66,27 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// ÄÄƒng xuáº¥t khá»i há»‡ thá»‘ng
+        /// Đăng xuất và xóa cookie phiên làm việc.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Chuyển về trang đăng nhập.</returns>
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction(nameof(Login));
         }
 
+        /// <summary>
+        /// Form đăng ký tài khoản nhân viên (mẫu).
+        /// </summary>
         [HttpGet]
         public IActionResult Register()
         {
             return View(new AdminRegisterViewModel());
         }
 
+        /// <summary>
+        /// Tạo nhân viên mới với chức vụ được phép (Staff/Manager/Admin).
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(AdminRegisterViewModel model)
@@ -112,6 +122,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Login));
         }
 
+        /// <summary>
+        /// Trang thông báo khi người dùng không có quyền truy cập.
+        /// </summary>
         [HttpGet]
         public IActionResult AccessDenied()
         {
@@ -119,9 +132,9 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n hiá»ƒn thá»‹ thÃ´ng tin cÃ¡ nhÃ¢n
+        /// Hiển thị thông tin cá nhân nhân viên đang đăng nhập.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>View hồ sơ.</returns>
         [HttpGet]
         public IActionResult Profile()
         {
@@ -129,24 +142,24 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Cáº­p nháº­t thÃ´ng tin cÃ¡ nhÃ¢n
+        /// Cập nhật thông tin cá nhân
         /// </summary>
-        /// <param name="fullName">Há» vÃ  tÃªn cáº§n cáº­p nháº­t</param>
-        /// <param name="email">Äá»‹a chá»‰ email cáº§n cáº­p nháº­t</param>
-        /// <param name="phone">Sá»‘ Ä‘iá»‡n thoáº¡i cáº§n cáº­p nháº­t</param>
-        /// <param name="address">Äá»‹a chá»‰ cáº§n cáº­p nháº­t</param>
-        /// <returns></returns>
+        /// <param name="fullName">Họ và tên cần cập nhật</param>
+        /// <param name="email">Địa chỉ email cần cập nhật.</param>
+        /// <param name="phone">Số điện thoại cần cập nhật.</param>
+        /// <param name="address">Địa chỉ cần cập nhật.</param>
+        /// <returns>Chuyển về trang chủ sau khi lưu (demo).</returns>
         [HttpPost]
         public IActionResult Profile(string fullName, string email, string phone, string address)
         {
-            // Xá»­ lÃ½ cáº­p nháº­t profile
+            // Xử lý cập nhật profile
             return RedirectToAction("Index", "Home");
         }
 
         /// <summary>
-        /// Giao diá»‡n thay Ä‘á»•i máº­t kháº©u
+        /// Form đổi mật khẩu.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>View đổi mật khẩu.</returns>
         [HttpGet]
         public IActionResult ChangePassword()
         {
@@ -154,23 +167,23 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ thay Ä‘á»•i máº­t kháº©u
+        /// Xử lý đổi mật khẩu (mẫu demo).
         /// </summary>
-        /// <param name="oldPassword">Máº­t kháº©u hiá»‡n táº¡i cáº§n kiá»ƒm tra</param>
-        /// <param name="newPassword">Máº­t kháº©u má»›i cáº§n thiáº¿t láº­p</param>
-        /// <param name="confirmPassword">XÃ¡c nháº­n máº­t kháº©u má»›i cáº§n thiáº¿t láº­p (pháº£i trÃ¹ng vá»›i newPassword)</param>
-        /// <returns></returns>
+        /// <param name="oldPassword">Mật khẩu hiện tại.</param>
+        /// <param name="newPassword">Mật khẩu mới.</param>
+        /// <param name="confirmPassword">Xác nhận mật khẩu mới (phải trùng với mật khẩu mới).</param>
+        /// <returns>Chuyển về trang chủ nếu hợp lệ.</returns>
         [HttpPost]
         public IActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
         {
-            // Kiá»ƒm tra vÃ  Ä‘á»•i máº­t kháº©u (giáº£ láº­p)
+            // Kiểm tra và đổi mật khẩu (giả lập)
             if (newPassword != confirmPassword)
             {
-                ModelState.AddModelError("", "Máº­t kháº©u xÃ¡c nháº­n khÃ´ng trÃ¹ng khá»›p.");
+                ModelState.AddModelError("", "Mật khẩu xác nhận không trùng khớp.");
                 return View();
             }
-            
-            // Xá»­ lÃ½ Ä‘á»•i máº­t kháº©u thÃ nh cÃ´ng...
+
+            // Xử lý đổi mật khẩu thành công...
             return RedirectToAction("Index", "Home");
         }
     }

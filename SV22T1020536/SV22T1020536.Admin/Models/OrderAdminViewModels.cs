@@ -7,6 +7,9 @@ using SV22T1020536.Models.Sales;
 
 namespace SV22T1020536.Admin.Models;
 
+/// <summary>
+/// View model trang lập đơn POS: sản phẩm lọc được, giỏ và địa chỉ giao.
+/// </summary>
 public class OrderCreatePageModel
 {
     public PagedResult<Product> Products { get; set; } = new();
@@ -27,12 +30,18 @@ public class OrderCreatePageModel
     public List<SelectListItem> ProvinceOptions { get; set; } = new();
 }
 
+/// <summary>
+/// View model chi tiết đơn hàng và các dòng chi tiết.
+/// </summary>
 public class OrderDetailPageModel
 {
     public OrderViewInfo Order { get; set; } = null!;
     public List<OrderDetailViewInfo> Details { get; set; } = new();
 }
 
+/// <summary>
+/// Dữ liệu cho modal chọn shipper khi chuyển đơn sang giao hàng.
+/// </summary>
 public class OrderShippingModalModel
 {
     public int OrderId { get; set; }

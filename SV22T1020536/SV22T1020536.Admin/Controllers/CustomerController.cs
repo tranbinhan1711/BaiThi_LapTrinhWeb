@@ -6,16 +6,21 @@ using SV22T1020536.Models.Partner;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// Quản lý khách hàng, gồm đổi mật khẩu.
+    /// </summary>
     [Authorize]
     public class CustomerController : Controller
     {
         private const int PAGE_SIZE = 10;
 
+        /// <summary>Trang danh sách khách hàng.</summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>Partial tìm kiếm khách hàng.</summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "")
         {
             var input = new PaginationSearchInput
@@ -28,6 +33,7 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>Form thêm khách hàng.</summary>
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -35,6 +41,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(new Customer { IsLocked = false });
         }
 
+        /// <summary>Lưu khách hàng mới (kiểm tra email trùng).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Customer model)
@@ -73,6 +80,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form sửa khách hàng.</summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -84,6 +92,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(customer);
         }
 
+        /// <summary>Cập nhật thông tin khách (email duy nhất).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Customer input)
@@ -132,6 +141,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Xác nhận xóa khách hàng.</summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -141,6 +151,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(customer);
         }
 
+        /// <summary>Xóa khách khi không còn ràng buộc dữ liệu.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)
@@ -156,6 +167,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form đổi mật khẩu đăng nhập shop của khách.</summary>
         [HttpGet]
         public async Task<IActionResult> ChangePassword(int id)
         {
@@ -165,6 +177,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(customer);
         }
 
+        /// <summary>Áp dụng mật khẩu mới cho tài khoản khách.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(int id, string newPassword, string confirmPassword)

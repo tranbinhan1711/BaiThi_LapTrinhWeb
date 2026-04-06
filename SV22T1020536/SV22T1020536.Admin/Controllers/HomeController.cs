@@ -5,24 +5,34 @@ using SV22T1020536.Models;
 
 namespace SV22T1020536.Admin.Controllers;
 
-    [Authorize]
+/// <summary>
+/// Trang chủ và lỗi chung của ứng dụng quản trị.
+/// </summary>
+[Authorize]
 public class HomeController : Controller
 {
     /// <summary>
-    /// Giao diá»‡n trang chá»§ cá»§a há»‡ thá»‘ng
+    /// Trang chủ bảng điều khiển sau khi đăng nhập.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>View trang chủ.</returns>
     public IActionResult Index()
     {
         return View();
     }
 
-
+    /// <summary>
+    /// Trang chính sách quyền riêng tư (mẫu).
+    /// </summary>
+    /// <returns>View Privacy.</returns>
     public IActionResult Privacy()
     {
         return View();
     }
 
+    /// <summary>
+    /// Trang lỗi với RequestId để tra cứu log.
+    /// </summary>
+    /// <returns>View Error.</returns>
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

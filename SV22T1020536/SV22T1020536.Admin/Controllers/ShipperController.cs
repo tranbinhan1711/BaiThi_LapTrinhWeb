@@ -6,16 +6,21 @@ using SV22T1020536.Models.Partner;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// CRUD người giao hàng (shipper).
+    /// </summary>
     [Authorize]
     public class ShipperController : Controller
     {
         private const int PAGE_SIZE = 10;
 
+        /// <summary>Trang danh sách shipper.</summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>Partial tìm kiếm và phân trang shipper.</summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "")
         {
             var input = new PaginationSearchInput
@@ -28,12 +33,14 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>Form thêm shipper.</summary>
         [HttpGet]
         public IActionResult Create()
         {
             return View(new Shipper());
         }
 
+        /// <summary>Lưu shipper mới.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Shipper model)
@@ -54,6 +61,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form sửa shipper.</summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -63,6 +71,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(shipper);
         }
 
+        /// <summary>Cập nhật shipper.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Shipper input)
@@ -89,6 +98,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Xác nhận xóa shipper.</summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -98,6 +108,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(shipper);
         }
 
+        /// <summary>Xóa shipper nếu được phép.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)

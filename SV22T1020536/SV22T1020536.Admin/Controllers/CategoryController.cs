@@ -6,16 +6,19 @@ using SV22T1020536.Models.Common;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>CRUD loại hàng (danh mục).</summary>
     [Authorize]
     public class CategoryController : Controller
     {
         private const int PAGE_SIZE = 10;
 
+        /// <summary>Trang danh sách loại hàng.</summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>Partial tìm loại hàng.</summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "")
         {
             var input = new PaginationSearchInput
@@ -28,12 +31,14 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>Form thêm loại hàng.</summary>
         [HttpGet]
         public IActionResult Create()
         {
             return View(new Category());
         }
 
+        /// <summary>Lưu loại hàng mới.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category model)
@@ -52,6 +57,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form sửa loại hàng.</summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -61,6 +67,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(category);
         }
 
+        /// <summary>Cập nhật loại hàng.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Category input)
@@ -85,6 +92,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Xác nhận xóa loại hàng.</summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -94,6 +102,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(category);
         }
 
+        /// <summary>Xóa loại hàng khi không còn dùng.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)

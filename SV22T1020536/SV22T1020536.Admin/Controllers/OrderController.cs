@@ -13,6 +13,9 @@ using SV22T1020536.Models.Sales;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// Quản lý đơn hàng: tra cứu, lập đơn POS, chi tiết và các thao tác trạng thái.
+    /// </summary>
     [Authorize]
     public class OrderController : Controller
     {
@@ -27,11 +30,17 @@ namespace SV22T1020536.Admin.Controllers
             return 1;
         }
 
+        /// <summary>
+        /// Trang nền danh sách đơn hàng (tìm kiếm AJAX ở partial).
+        /// </summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Trả về partial kết quả lọc đơn theo từ khóa, trạng thái và khoảng ngày.
+        /// </summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "", int status = 0, string dateFrom = "", string dateTo = "")
         {
             var input = new OrderSearchInput
@@ -50,6 +59,9 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>
+        /// Màn hình lập đơn POS: chọn mặt hàng, giỏ tạm và thông tin giao hàng.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Create(string searchValue = "", int page = 1)
         {
@@ -57,6 +69,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Thêm một dòng hàng vào giỏ lập đơn.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddToCart(
@@ -79,6 +94,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToCreate(searchValue, page);
         }
 
+        /// <summary>
+        /// Cập nhật số lượng và đơn giá của dòng trong giỏ.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult UpdateCartItem(
@@ -92,6 +110,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToCreate(searchValue, page);
         }
 
+        /// <summary>
+        /// Xác nhận xóa một dòng khỏi giỏ (GET).
+        /// </summary>
         [HttpGet]
         public IActionResult RemoveCartItem(int productId, string searchValue = "", int page = 1)
         {
@@ -111,6 +132,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Xóa một dòng khỏi giỏ sau khi xác nhận.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult RemoveCartItem(int productId, string searchValue = "", int page = 1, IFormCollection? _ = null)
@@ -120,6 +144,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToCreate(searchValue, page);
         }
 
+        /// <summary>
+        /// Xác nhận xóa toàn bộ giỏ lập đơn (GET).
+        /// </summary>
         [HttpGet]
         public IActionResult ClearPosCart(string searchValue = "", int page = 1)
         {
@@ -139,6 +166,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Xóa toàn bộ giỏ lập đơn.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ClearPosCart(string searchValue = "", int page = 1, IFormCollection? _ = null)
@@ -148,6 +178,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToCreate(searchValue, page);
         }
 
+        /// <summary>
+        /// Ghi đơn hàng xuống CSDL, tạo khách POS và chi tiết dòng từ giỏ.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(
@@ -279,6 +312,9 @@ namespace SV22T1020536.Admin.Controllers
             };
         }
 
+        /// <summary>
+        /// Chi tiết một đơn hàng và các dòng hàng.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Detail(int id)
         {
@@ -295,12 +331,18 @@ namespace SV22T1020536.Admin.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Partial xác nhận duyệt đơn (chấp nhận).
+        /// </summary>
         [HttpGet]
         public IActionResult Accept(int id)
         {
             return PartialView(id);
         }
 
+        /// <summary>
+        /// Thực hiện duyệt đơn ở trạng thái mới.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptConfirm(int id)
@@ -312,6 +354,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Detail), new { id });
         }
 
+        /// <summary>
+        /// Chọn người giao hàng (partial/modal).
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Shipping(int id)
         {
@@ -341,6 +386,9 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(model);
         }
 
+        /// <summary>
+        /// Gán shipper và chuyển đơn sang trạng thái đang giao.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Shipping(int id, int shipperID)
@@ -358,12 +406,18 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Detail), new { id });
         }
 
+        /// <summary>
+        /// Partial xác nhận hoàn tất đơn.
+        /// </summary>
         [HttpGet]
         public IActionResult Finish(int id)
         {
             return PartialView(id);
         }
 
+        /// <summary>
+        /// Đánh dấu đơn đã hoàn tất sau khi giao.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinishConfirm(int id)
@@ -375,12 +429,18 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Detail), new { id });
         }
 
+        /// <summary>
+        /// Partial xác nhận từ chối đơn mới.
+        /// </summary>
         [HttpGet]
         public IActionResult Reject(int id)
         {
             return PartialView(id);
         }
 
+        /// <summary>
+        /// Từ chối đơn ở trạng thái mới.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectConfirm(int id)
@@ -392,12 +452,18 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Detail), new { id });
         }
 
+        /// <summary>
+        /// Partial xác nhận hủy đơn.
+        /// </summary>
         [HttpGet]
         public IActionResult Cancel(int id)
         {
             return PartialView(id);
         }
 
+        /// <summary>
+        /// Hủy đơn theo quy tắc nghiệp vụ.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelConfirm(int id)
@@ -409,12 +475,18 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Detail), new { id });
         }
 
+        /// <summary>
+        /// Partial xác nhận xóa đơn.
+        /// </summary>
         [HttpGet]
         public IActionResult Delete(int id)
         {
             return PartialView(id);
         }
 
+        /// <summary>
+        /// Xóa đơn khỏi hệ thống khi được phép.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirm(int id)

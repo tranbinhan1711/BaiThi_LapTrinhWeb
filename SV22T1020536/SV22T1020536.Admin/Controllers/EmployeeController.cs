@@ -6,16 +6,21 @@ using SV22T1020536.Models.HR;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// Quản lý nhân viên: CRUD, đổi mật khẩu và phân quyền.
+    /// </summary>
     [Authorize]
     public class EmployeeController : Controller
     {
         private const int PAGE_SIZE = 10;
 
+        /// <summary>Trang danh sách nhân viên.</summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>Partial tìm nhân viên.</summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "")
         {
             var input = new PaginationSearchInput
@@ -28,12 +33,14 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>Form thêm nhân viên.</summary>
         [HttpGet]
         public IActionResult Create()
         {
             return View(new Employee { IsWorking = true, RoleNames = "Staff" });
         }
 
+        /// <summary>Lưu nhân viên (email không trùng).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Employee model)
@@ -68,6 +75,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form sửa nhân viên.</summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -78,6 +86,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(employee);
         }
 
+        /// <summary>Cập nhật hồ sơ nhân viên.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Employee input)
@@ -121,6 +130,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Xác nhận xóa nhân viên.</summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -131,6 +141,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(employee);
         }
 
+        /// <summary>Xóa nhân viên khi không vi phạm ràng buộc.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)
@@ -146,6 +157,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form đổi mật khẩu nhân viên.</summary>
         [HttpGet]
         public async Task<IActionResult> ChangePassword(int id)
         {
@@ -156,6 +168,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(employee);
         }
 
+        /// <summary>Đặt mật khẩu mới cho nhân viên.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(int id, string newPassword, string confirmPassword)
@@ -187,6 +200,7 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>Form chỉnh vai trò (chuỗi RoleNames).</summary>
         [HttpGet]
         public async Task<IActionResult> ChangeRole(int id)
         {
@@ -197,6 +211,7 @@ namespace SV22T1020536.Admin.Controllers
             return View(employee);
         }
 
+        /// <summary>Lưu phân quyền sau khi validate.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeRole(int id, string roleNames)

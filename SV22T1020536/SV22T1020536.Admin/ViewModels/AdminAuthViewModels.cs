@@ -2,6 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SV22T1020536.Admin.ViewModels
 {
+    /// <summary>
+    /// Dữ liệu form đăng nhập quản trị.
+    /// </summary>
     public class AdminLoginViewModel
     {
         [Required]
@@ -15,6 +18,9 @@ namespace SV22T1020536.Admin.ViewModels
         public string Password { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Dữ liệu form đăng ký nhân viên (mẫu).
+    /// </summary>
     public class AdminRegisterViewModel
     {
         [Required]

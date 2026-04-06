@@ -6,16 +6,25 @@ using SV22T1020536.Models.Partner;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// CRUD nhà cung cấp.
+    /// </summary>
     [Authorize]
     public class SupplierController : Controller
     {
         private const int PAGE_SIZE = 10;
 
+        /// <summary>
+        /// Trang danh sách nhà cung cấp (kết quả tải qua partial tìm kiếm).
+        /// </summary>
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Partial phân trang và tìm nhà cung cấp.
+        /// </summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "")
         {
             var input = new PaginationSearchInput
@@ -28,6 +37,9 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>
+        /// Form thêm nhà cung cấp.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -35,6 +47,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(new Supplier());
         }
 
+        /// <summary>
+        /// Lưu nhà cung cấp mới sau khi validate.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Supplier model)
@@ -63,6 +78,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Form sửa nhà cung cấp.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -74,6 +92,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(supplier);
         }
 
+        /// <summary>
+        /// Cập nhật nhà cung cấp.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Supplier input)
@@ -107,6 +128,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Xác nhận xóa nhà cung cấp.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -116,6 +140,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(supplier);
         }
 
+        /// <summary>
+        /// Xóa nhà cung cấp nếu không bị tham chiếu.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)

@@ -6,15 +6,18 @@ using SV22T1020536.Models.Common;
 
 namespace SV22T1020536.Admin.Controllers
 {
+    /// <summary>
+    /// Quản lý mặt hàng: CRUD, thuộc tính và album ảnh.
+    /// </summary>
     [Authorize]
     public class ProductController : Controller
     {
         private const int PAGE_SIZE = 10;
 
         /// <summary>
-        /// Giao diá»‡n tÃ¬m kiáº¿m vÃ  hiá»ƒn thá»‹ danh sÃ¡ch máº·t hÃ ng
+        /// Giao diện tìm kiếm và hiển thị danh sách mặt hàng.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Trang danh sách mặt hàng.</returns>
         public async Task<IActionResult> Index()
         {
             var listInput = new PaginationSearchInput { Page = 1, PageSize = 500, SearchValue = "" };
@@ -23,6 +26,9 @@ namespace SV22T1020536.Admin.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Partial kết quả tìm mặt hàng theo bộ lọc và giá.
+        /// </summary>
         public async Task<IActionResult> Search(int page = 1, string searchValue = "", int categoryID = 0, int supplierID = 0, string minPrice = "", string maxPrice = "")
         {
             var input = new ProductSearchInput
@@ -39,6 +45,9 @@ namespace SV22T1020536.Admin.Controllers
             return PartialView(data);
         }
 
+        /// <summary>
+        /// Nạp danh sách loại hàng và nhà cung cấp cho ViewBag.
+        /// </summary>
         private async Task LoadProductLookupsAsync()
         {
             var listInput = new PaginationSearchInput { Page = 1, PageSize = 500, SearchValue = "" };
@@ -46,6 +55,9 @@ namespace SV22T1020536.Admin.Controllers
             ViewBag.Suppliers = (await PartnerDataService.ListSuppliersAsync(listInput)).DataItems;
         }
 
+        /// <summary>
+        /// Chi tiết một mặt hàng kèm tên loại và NCC.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Detail(int id)
         {
@@ -63,6 +75,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(product);
         }
 
+        /// <summary>
+        /// Form thêm mặt hàng.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -70,6 +85,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(new Product { IsSelling = true });
         }
 
+        /// <summary>
+        /// Lưu mặt hàng mới sau khi validate.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product model)
@@ -100,6 +118,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Form sửa mặt hàng.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -111,6 +132,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(product);
         }
 
+        /// <summary>
+        /// Cập nhật mặt hàng.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Product input)
@@ -150,6 +174,9 @@ namespace SV22T1020536.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Xác nhận xóa mặt hàng (hiển thị tên loại/NCC).
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -167,6 +194,9 @@ namespace SV22T1020536.Admin.Controllers
             return View(product);
         }
 
+        /// <summary>
+        /// Xóa mặt hàng khi không còn ràng buộc.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, IFormCollection _)
@@ -184,10 +214,10 @@ namespace SV22T1020536.Admin.Controllers
 
         // Attributes
         /// <summary>
-        /// Giao diá»‡n danh sÃ¡ch thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Giao diện danh sách thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <returns>View danh sách thuộc tính.</returns>
         [HttpGet]
         public IActionResult ListAttributes(int id)
         {
@@ -195,10 +225,10 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n thÃªm má»›i thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Giao diện thêm mới thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <returns>View tạo thuộc tính.</returns>
         [HttpGet]
         public IActionResult CreateAttribute(int id)
         {
@@ -206,13 +236,13 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ thÃªm má»›i thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Xử lý thêm mới thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng cáº§n thÃªm thuá»™c tÃ­nh</param>
-        /// <param name="attributeName">TÃªn thuá»™c tÃ­nh cáº§n thÃªm</param>
-        /// <param name="attributeValue">GiÃ¡ trá»‹ thuá»™c tÃ­nh cáº§n thÃªm</param>
-        /// <param name="displayOrder">Thá»© tá»± hiá»ƒn thá»‹ cáº§n thÃªm</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng cần thêm thuộc tính.</param>
+        /// <param name="attributeName">Tên thuộc tính.</param>
+        /// <param name="attributeValue">Giá trị thuộc tính.</param>
+        /// <param name="displayOrder">Thứ tự hiển thị.</param>
+        /// <returns>Chuyển về danh sách thuộc tính.</returns>
         [HttpPost]
         public IActionResult CreateAttribute(int id, string attributeName, string attributeValue, int displayOrder)
         {
@@ -220,11 +250,11 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n chá»‰nh sá»­a thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Giao diện chỉnh sửa thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="attributeId">MÃ£ thuá»™c tÃ­nh</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="attributeId">Mã thuộc tính.</param>
+        /// <returns>View sửa thuộc tính.</returns>
         [HttpGet]
         public IActionResult EditAttribute(int id, long attributeId)
         {
@@ -232,14 +262,14 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ cáº­p nháº­t thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Xử lý cập nhật thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng cáº§n cáº­p nháº­t thuá»™c tÃ­nh</param>
-        /// <param name="attributeId">MÃ£ thuá»™c tÃ­nh cáº§n cáº­p nháº­t</param>
-        /// <param name="attributeName">TÃªn thuá»™c tÃ­nh cáº§n cáº­p nháº­t</param>
-        /// <param name="attributeValue">GiÃ¡ trá»‹ thuá»™c tÃ­nh cáº§n cáº­p nháº­t</param>
-        /// <param name="displayOrder">Thá»© tá»± hiá»ƒn thá»‹ cáº§n cáº­p nháº­t</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="attributeId">Mã thuộc tính.</param>
+        /// <param name="attributeName">Tên thuộc tính.</param>
+        /// <param name="attributeValue">Giá trị thuộc tính.</param>
+        /// <param name="displayOrder">Thứ tự hiển thị.</param>
+        /// <returns>Chuyển về danh sách thuộc tính.</returns>
         [HttpPost]
         public IActionResult EditAttribute(int id, long attributeId, string attributeName, string attributeValue, int displayOrder)
         {
@@ -247,11 +277,11 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n xÃ¡c nháº­n xÃ³a thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Giao diện xác nhận xóa thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="attributeId">MÃ£ thuá»™c tÃ­nh cáº§n xÃ³a</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="attributeId">Mã thuộc tính cần xóa.</param>
+        /// <returns>View xác nhận xóa.</returns>
         [HttpGet]
         public IActionResult DeleteAttribute(int id, long attributeId)
         {
@@ -259,12 +289,12 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ xÃ³a thuá»™c tÃ­nh cá»§a máº·t hÃ ng
+        /// Xử lý xóa thuộc tính của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="attributeId">MÃ£ thuá»™c tÃ­nh cáº§n xÃ³a</param>
-        /// <param name="confirm">XÃ¡c nháº­n xÃ³a</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="attributeId">Mã thuộc tính cần xóa.</param>
+        /// <param name="confirm">Xác nhận xóa.</param>
+        /// <returns>Chuyển về danh sách thuộc tính.</returns>
         [HttpPost]
         public IActionResult DeleteAttribute(int id, long attributeId, string confirm)
         {
@@ -273,10 +303,10 @@ namespace SV22T1020536.Admin.Controllers
 
         // Photos
         /// <summary>
-        /// Giao diá»‡n danh sÃ¡ch áº£nh cá»§a máº·t hÃ ng
+        /// Giao diện danh sách ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <returns>View danh sách ảnh.</returns>
         [HttpGet]
         public IActionResult ListPhotos(int id)
         {
@@ -284,10 +314,10 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n thÃªm má»›i áº£nh cá»§a máº·t hÃ ng
+        /// Giao diện thêm mới ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <returns>View thêm ảnh.</returns>
         [HttpGet]
         public IActionResult CreatePhoto(int id)
         {
@@ -295,14 +325,14 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ thÃªm má»›i áº£nh cá»§a máº·t hÃ ng
+        /// Xử lý thêm mới ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng cáº§n thÃªm áº£nh</param>
-        /// <param name="photo">ÄÆ°á»ng dáº«n áº£nh cáº§n thÃªm</param>
-        /// <param name="description">MÃ´ táº£ áº£nh cáº§n thÃªm</param>
-        /// <param name="displayOrder">Thá»© tá»± hiá»ƒn thá»‹ cáº§n thÃªm</param>
-        /// <param name="isHidden">Tráº¡ng thÃ¡i áº©n cáº§n thÃªm (true: áº©n, false: hiá»‡n)</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="photo">Đường dẫn ảnh.</param>
+        /// <param name="description">Mô tả ảnh.</param>
+        /// <param name="displayOrder">Thứ tự hiển thị.</param>
+        /// <param name="isHidden">Trạng thái ẩn (true: ẩn, false: hiện).</param>
+        /// <returns>Chuyển về danh sách ảnh.</returns>
         [HttpPost]
         public IActionResult CreatePhoto(int id, string photo, string description, int displayOrder, bool isHidden)
         {
@@ -310,11 +340,11 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n chá»‰nh sá»­a áº£nh cá»§a máº·t hÃ ng
+        /// Giao diện chỉnh sửa ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="photoId">MÃ£ áº£nh</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="photoId">Mã ảnh.</param>
+        /// <returns>View sửa ảnh.</returns>
         [HttpGet]
         public IActionResult EditPhoto(int id, long photoId)
         {
@@ -322,15 +352,15 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ cáº­p nháº­t áº£nh cá»§a máº·t hÃ ng
+        /// Xử lý cập nhật ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng cáº§n cáº­p nháº­t áº£nh</param>
-        /// <param name="photoId">MÃ£ áº£nh cáº§n cáº­p nháº­t</param>
-        /// <param name="photo">ÄÆ°á»ng dáº«n áº£nh cáº§n cáº­p nháº­t</param>
-        /// <param name="description">MÃ´ táº£ áº£nh cáº§n cáº­p nháº­t</param>
-        /// <param name="displayOrder">Thá»© tá»± hiá»ƒn thá»‹ cáº§n cáº­p nháº­t</param>
-        /// <param name="isHidden">Tráº¡ng thÃ¡i áº©n cáº§n cáº­p nháº­t (true: áº©n, false: hiá»‡n)</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="photoId">Mã ảnh.</param>
+        /// <param name="photo">Đường dẫn ảnh.</param>
+        /// <param name="description">Mô tả ảnh.</param>
+        /// <param name="displayOrder">Thứ tự hiển thị.</param>
+        /// <param name="isHidden">Trạng thái ẩn (true: ẩn, false: hiện).</param>
+        /// <returns>Chuyển về danh sách ảnh.</returns>
         [HttpPost]
         public IActionResult EditPhoto(int id, long photoId, string photo, string description, int displayOrder, bool isHidden)
         {
@@ -338,11 +368,11 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Giao diá»‡n xÃ¡c nháº­n xÃ³a áº£nh cá»§a máº·t hÃ ng
+        /// Giao diện xác nhận xóa ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="photoId">MÃ£ áº£nh cáº§n xÃ³a</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="photoId">Mã ảnh cần xóa.</param>
+        /// <returns>View xác nhận xóa.</returns>
         [HttpGet]
         public IActionResult DeletePhoto(int id, long photoId)
         {
@@ -350,12 +380,12 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Xá»­ lÃ½ xÃ³a áº£nh cá»§a máº·t hÃ ng
+        /// Xử lý xóa ảnh của mặt hàng.
         /// </summary>
-        /// <param name="id">MÃ£ máº·t hÃ ng</param>
-        /// <param name="photoId">MÃ£ áº£nh cáº§n xÃ³a</param>
-        /// <param name="confirm">XÃ¡c nháº­n xÃ³a</param>
-        /// <returns></returns>
+        /// <param name="id">Mã mặt hàng.</param>
+        /// <param name="photoId">Mã ảnh cần xóa.</param>
+        /// <param name="confirm">Xác nhận xóa.</param>
+        /// <returns>Chuyển về danh sách ảnh.</returns>
         [HttpPost]
         public IActionResult DeletePhoto(int id, long photoId, string confirm)
         {
