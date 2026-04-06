@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace LiteCommerce.Admin
+namespace SV22T1020536.Admin.AppCodes
 {
     /// <summary>
     /// Lớp cung cấp các hàm tiện ích sử dụng cho mã hóa

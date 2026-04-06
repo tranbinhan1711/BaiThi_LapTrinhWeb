@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using SV22T1020536.Admin.AppCodes;
 using SV22T1020536.Admin.ViewModels;
 using SV22T1020536.BusinessLayers;
 using SV22T1020536.Models.HR;
@@ -40,8 +41,12 @@ namespace SV22T1020536.Admin.Controllers
             }
 
             var email = model.Email?.Trim() ?? "";
+            var hashedPassword = CryptHelper.HashMD5(model.Password ?? "");
             var employee = await HRDataService.GetEmployeeByEmailAsync(email);
-            if (employee == null || !employee.IsWorking || string.IsNullOrWhiteSpace(employee.Password) || employee.Password != model.Password)
+            var passwordMatched = employee != null &&
+                                  !string.IsNullOrWhiteSpace(employee.Password) &&
+                                  (employee.Password == hashedPassword || employee.Password == model.Password);
+            if (employee == null || !employee.IsWorking || !passwordMatched)
             {
                 ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không đúng.");
                 ViewBag.ReturnUrl = returnUrl;
@@ -113,7 +118,7 @@ namespace SV22T1020536.Admin.Controllers
             {
                 FullName = model.FullName.Trim(),
                 Email = email,
-                Password = model.Password,
+                Password = CryptHelper.HashMD5(model.Password ?? ""),
                 IsWorking = true,
                 RoleNames = roleNames,
             };

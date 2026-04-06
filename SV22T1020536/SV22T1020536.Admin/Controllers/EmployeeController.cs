@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using SV22T1020536.Admin.AppCodes;
 using SV22T1020536.BusinessLayers;
 using SV22T1020536.Models.Common;
 using SV22T1020536.Models.HR;
@@ -69,6 +70,7 @@ namespace SV22T1020536.Admin.Controllers
             model.Address = string.IsNullOrWhiteSpace(model.Address) ? null : model.Address.Trim();
             model.RoleNames = model.RoleNames.Trim();
             model.Photo = string.IsNullOrWhiteSpace(model.Photo) ? null : model.Photo.Trim();
+            model.Password = CryptHelper.HashMD5(model.Password ?? "");
 
             await HRDataService.AddEmployeeAsync(model);
             TempData["SuccessMessage"] = "Đã thêm nhân viên";
@@ -188,7 +190,7 @@ namespace SV22T1020536.Admin.Controllers
                 return View(employee);
             }
 
-            var ok = await HRDataService.ChangeEmployeePasswordAsync(id, newPassword.Trim());
+            var ok = await HRDataService.ChangeEmployeePasswordAsync(id, CryptHelper.HashMD5(newPassword.Trim()));
             if (!ok)
             {
                 TempData["ErrorMessage"] = "Không thể cập nhật mật khẩu.";

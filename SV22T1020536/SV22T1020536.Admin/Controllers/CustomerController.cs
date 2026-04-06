@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using SV22T1020536.Admin.AppCodes;
 using SV22T1020536.BusinessLayers;
 using SV22T1020536.Models.Common;
 using SV22T1020536.Models.Partner;
@@ -73,6 +74,7 @@ namespace SV22T1020536.Admin.Controllers
             model.ContactName = model.ContactName.Trim();
             model.Phone = model.Phone?.Trim();
             model.Email = email;
+            model.Password = CryptHelper.HashMD5(model.Password ?? "");
             model.Address = string.IsNullOrWhiteSpace(model.Address) ? null : model.Address.Trim();
             model.Province = string.IsNullOrWhiteSpace(model.Province) ? null : model.Province.Trim();
             await PartnerDataService.AddCustomerAsync(model);
@@ -194,7 +196,7 @@ namespace SV22T1020536.Admin.Controllers
             if (!ModelState.IsValid)
                 return View(customer);
 
-            var ok = await PartnerDataService.ChangeCustomerPasswordAsync(id, newPassword.Trim());
+            var ok = await PartnerDataService.ChangeCustomerPasswordAsync(id, CryptHelper.HashMD5(newPassword.Trim()));
             if (!ok)
             {
                 TempData["ErrorMessage"] = "Không thể cập nhật mật khẩu.";
