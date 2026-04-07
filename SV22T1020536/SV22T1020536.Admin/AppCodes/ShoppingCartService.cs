@@ -10,7 +10,10 @@ namespace SV22T1020536.Admin.AppCodes;
 public static class ShoppingCartService
 {
     private const string CartKey = "AdminPosShoppingCart";
-
+    /// <summary>
+    /// Lấy giỏ hàng từ session
+    /// </summary>
+    /// <returns></returns>
     public static List<OrderDetailViewInfo> GetShoppingCart()
     {
         var cart = ApplicationContext.GetSessionData<List<OrderDetailViewInfo>>(CartKey);
@@ -22,11 +25,20 @@ public static class ShoppingCartService
 
         return cart;
     }
+    /// <summary>
+    /// Lấy thông tin 1 mặt hàng từ giỏ hàng
+    /// </summary>
+    /// <param name="productID"></param>
+    /// <returns></returns>
 
     public static OrderDetailViewInfo? GetCartItem(int productId)
     {
         return GetShoppingCart().Find(m => m.ProductID == productId);
     }
+    /// <summary>
+    /// Thêm hàng vào giỏ hàng
+    /// </summary>
+    /// <param name="item"></param>
 
     public static void AddCartItem(OrderDetailViewInfo item)
     {
@@ -47,6 +59,12 @@ public static class ShoppingCartService
 
         ApplicationContext.SetSessionData(CartKey, cart);
     }
+    /// <summary>
+        /// Cập nhật số lượng và giá của một mặt hàng trong giỏ hàng
+        /// </summary>
+        /// <param name="productID"></param>
+        /// <param name="quantity"></param>
+        /// <param name="salePrice"></param>
 
     public static void UpdateCartItem(int productId, int quantity, decimal salePrice)
     {
@@ -59,6 +77,10 @@ public static class ShoppingCartService
         item.SalePrice = salePrice < 0 ? 0 : salePrice;
         ApplicationContext.SetSessionData(CartKey, cart);
     }
+    /// <summary>
+    /// Xóa một mặt hàng ra khỏi giỏ hàng
+    /// </summary>
+    /// <param name="productID"></param>
 
     public static void RemoveCartItem(int productId)
     {
@@ -70,6 +92,9 @@ public static class ShoppingCartService
             ApplicationContext.SetSessionData(CartKey, cart);
         }
     }
+    /// <summary>
+    /// Xóa giỏ hàng
+    /// </summary>
 
     public static void ClearCart()
     {

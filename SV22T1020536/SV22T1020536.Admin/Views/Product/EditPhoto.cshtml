@@ -1,83 +1,82 @@
-﻿@{
+﻿@model ProductPhoto
+@{
+    var product = ViewBag.Product as Product;
+    if (product == null) { throw new InvalidOperationException("Thiếu ViewBag.Product"); }
+    var currentUrl = ProductPhotos.ResolveVirtualPath(Model.Photo, product.ProductName);
 }
 @section PageToolBar {
-    <button type="submit" form="formEdit" class="btn btn-primary">
+    <button type="submit" form="formEditPhoto" class="btn btn-primary">
         <i class="bi bi-save"></i>
-        Lưu ảnh
+        Lưu
     </button>
-
-    <a href="~/Product/Edit/123#photos" class="btn btn-secondary ms-1">
+    <a asp-action="ListPhotos" asp-route-id="@product.ProductID" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
         Quay lại
     </a>
 }
-<div class="row justify-content-center">
-    <div class="col-12">
-        <div class="card card-outline card-info">
-            <div class="card-header">
-                <h5 class="mb-0">Thông tin ảnh mặt hàng</h5>
-            </div>
 
-            <div class="card-body">
-                <form id="formEdit" method="post" enctype="multipart/form-data">
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-image me-2"></i>
+                    Sửa ảnh thư viện — <strong>@product.ProductName</strong>
+                </h5>
+            </div>
+            <form id="formEditPhoto" asp-action="EditPhoto" asp-route-id="@product.ProductID" asp-route-photoId="@Model.PhotoID" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
                     <div class="row mb-3 align-items-center">
-                        <label class="col-sm-3 fw-semibold">Ảnh</label>
+                        <label class="col-sm-3 col-form-label fw-semibold">Ảnh mới (tuỳ chọn)</label>
                         <div class="col-sm-9">
-                            <input type="file"
-                                   name="Photo"
-                                   class="form-control"
-                                   accept="image/*"
-                                   data-img-preview="imgPreview"
-                                   onchange="previewImage(this)" />
+                            <input type="file" class="form-control" id="galleryFile" name="galleryFile" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.bmp" data-img-preview="imgPreview" onchange="previewImage(this)" />
+                            <div class="form-text">Để trống nếu chỉ đổi mô tả hoặc thứ tự.</div>
                         </div>
                     </div>
-
                     <div class="row mb-3">
-                        <label class="col-sm-3 fw-semibold">Xem trước</label>
+                        <label class="col-sm-3 col-form-label fw-semibold">Xem trước</label>
                         <div class="col-sm-9">
                             <img id="imgPreview"
-                                 src="~/images/products/nophoto.png"
+                                 src="@(string.IsNullOrWhiteSpace(currentUrl) ? Url.Content("~/images/products/nophoto.png") : Url.Content(currentUrl))"
                                  class="img-thumbnail"
-                                 style="max-height:200px;" />
+                                 style="max-height:220px;"
+                                 alt="" />
                         </div>
                     </div>
-
                     <div class="row mb-3">
-                        <label class="col-sm-3 fw-semibold">Mô tả</label>
+                        <label class="col-sm-3 col-form-label fw-semibold" for="description">Mô tả</label>
                         <div class="col-sm-9">
-                            <input type="text" name="Description"
-                                      class="form-control" />
+                            <input type="text" class="form-control" id="description" name="description" value="@Model.Description" maxlength="255" />
                         </div>
                     </div>
-
                     <div class="row mb-3">
-                        <label class="col-sm-3 fw-semibold">Thứ tự hiển thị</label>
+                        <label class="col-sm-3 col-form-label fw-semibold" for="displayOrder">Thứ tự hiển thị</label>
                         <div class="col-sm-3">
-                            <input type="number"
-                                   name="DisplayOrder"
-                                   class="form-control"
-                                   value="1"
-                                   min="1" />
+                            <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="@Model.DisplayOrder" />
                         </div>
                     </div>
-
-                    <div class="row mb-4">
-                        <label class="col-sm-3 fw-semibold">Trạng thái</label>
+                    <div class="row mb-0">
+                        <label class="col-sm-3 col-form-label fw-semibold">Trạng thái</label>
                         <div class="col-sm-9">
                             <div class="form-check">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       name="IsHidden"
-                                       id="IsHidden" />
-                                <label class="form-check-label" for="IsHidden">
-                                    Ẩn ảnh
-                                </label>
+                                <input class="form-check-input" type="checkbox" name="isHidden" id="isHidden" value="true" @(Model.IsHidden ? "checked" : null) />
+                                <label class="form-check-label" for="isHidden">Ẩn ảnh với khách hàng</label>
                             </div>
                         </div>
-                    </div>                    
-                </form>
-            </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                    <a asp-action="ListPhotos" asp-route-id="@product.ProductID" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy bỏ
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

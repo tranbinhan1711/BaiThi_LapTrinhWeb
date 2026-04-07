@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using SV22T1020536.Admin.AppCodes;
@@ -47,7 +48,8 @@ namespace SV22T1020536.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Customer model)
         {
-            ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
+            var provinces = await DictionaryDataService.ListProvincesAsync();
+            ViewBag.Provinces = provinces;
 
             if (string.IsNullOrWhiteSpace(model.CustomerName))
                 ModelState.AddModelError(nameof(Customer.CustomerName), "Vui lòng nhập tên khách hàng.");
@@ -77,6 +79,13 @@ namespace SV22T1020536.Admin.Controllers
             model.Password = CryptHelper.HashMD5(model.Password ?? "");
             model.Address = string.IsNullOrWhiteSpace(model.Address) ? null : model.Address.Trim();
             model.Province = string.IsNullOrWhiteSpace(model.Province) ? null : model.Province.Trim();
+            if (model.Province != null &&
+                !provinces.Any(p => string.Equals(p.ProvinceName, model.Province, StringComparison.OrdinalIgnoreCase)))
+            {
+                ModelState.AddModelError(nameof(Customer.Province), "Tỉnh/thành không hợp lệ.");
+                return View(model);
+            }
+
             await PartnerDataService.AddCustomerAsync(model);
             TempData["SuccessMessage"] = "Đã thêm khách hàng thành công.";
             return RedirectToAction(nameof(Index));
@@ -103,7 +112,8 @@ namespace SV22T1020536.Admin.Controllers
             if (existing == null)
                 return NotFound();
 
-            ViewBag.Provinces = await DictionaryDataService.ListProvincesAsync();
+            var provinces = await DictionaryDataService.ListProvincesAsync();
+            ViewBag.Provinces = provinces;
 
             if (string.IsNullOrWhiteSpace(input.CustomerName))
                 ModelState.AddModelError(nameof(Customer.CustomerName), "Vui lòng nhập tên khách hàng.");
@@ -137,6 +147,14 @@ namespace SV22T1020536.Admin.Controllers
             existing.Address = string.IsNullOrWhiteSpace(input.Address) ? null : input.Address.Trim();
             existing.Province = string.IsNullOrWhiteSpace(input.Province) ? null : input.Province.Trim();
             existing.IsLocked = input.IsLocked;
+
+            if (existing.Province != null &&
+                !provinces.Any(p => string.Equals(p.ProvinceName, existing.Province, StringComparison.OrdinalIgnoreCase)))
+            {
+                ModelState.AddModelError(nameof(Customer.Province), "Tỉnh/thành không hợp lệ.");
+                input.Password = existing.Password;
+                return View(input);
+            }
 
             await PartnerDataService.UpdateCustomerAsync(existing);
             TempData["SuccessMessage"] = "Đã cập nhật khách hàng thành công.";

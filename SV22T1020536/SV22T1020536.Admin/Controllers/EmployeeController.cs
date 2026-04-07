@@ -1,5 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020536.Admin.AppCodes;
 using SV22T1020536.BusinessLayers;
 using SV22T1020536.Models.Common;
@@ -14,6 +16,12 @@ namespace SV22T1020536.Admin.Controllers
     public class EmployeeController : Controller
     {
         private const int PAGE_SIZE = 10;
+        private readonly IWebHostEnvironment _env;
+
+        public EmployeeController(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
 
         /// <summary>Trang danh sách nhân viên.</summary>
         public IActionResult Index()
@@ -44,7 +52,7 @@ namespace SV22T1020536.Admin.Controllers
         /// <summary>Lưu nhân viên (email không trùng).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Employee model)
+        public async Task<IActionResult> Create(Employee model, IFormFile? photoFile)
         {
             if (string.IsNullOrWhiteSpace(model.FullName))
                 ModelState.AddModelError(nameof(Employee.FullName), "Vui lòng nhập họ tên.");
@@ -65,11 +73,15 @@ namespace SV22T1020536.Admin.Controllers
                 return View(model);
             }
 
+            var savedPhoto = await WebImageUploadHelper.SaveEmployeeImageAsync(_env, photoFile, ModelState, "photoFile");
+            if (!ModelState.IsValid)
+                return View(model);
+
             model.FullName = model.FullName.Trim();
             model.Phone = string.IsNullOrWhiteSpace(model.Phone) ? null : model.Phone.Trim();
             model.Address = string.IsNullOrWhiteSpace(model.Address) ? null : model.Address.Trim();
             model.RoleNames = model.RoleNames.Trim();
-            model.Photo = string.IsNullOrWhiteSpace(model.Photo) ? null : model.Photo.Trim();
+            model.Photo = savedPhoto;
             model.Password = CryptHelper.HashMD5(model.Password ?? "");
 
             await HRDataService.AddEmployeeAsync(model);
@@ -91,7 +103,7 @@ namespace SV22T1020536.Admin.Controllers
         /// <summary>Cập nhật hồ sơ nhân viên.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Employee input)
+        public async Task<IActionResult> Edit(int id, Employee input, IFormFile? photoFile)
         {
             var existing = await HRDataService.GetEmployeeAsync(id);
             if (existing == null)
@@ -118,6 +130,13 @@ namespace SV22T1020536.Admin.Controllers
                 return View(input);
             }
 
+            var savedPhoto = await WebImageUploadHelper.SaveEmployeeImageAsync(_env, photoFile, ModelState, "photoFile");
+            if (!ModelState.IsValid)
+            {
+                input.Password = null;
+                return View(input);
+            }
+
             existing.FullName = input.FullName.Trim();
             existing.BirthDate = input.BirthDate;
             existing.Address = string.IsNullOrWhiteSpace(input.Address) ? null : input.Address.Trim();
@@ -125,7 +144,10 @@ namespace SV22T1020536.Admin.Controllers
             existing.Email = input.Email;
             existing.IsWorking = input.IsWorking;
             existing.RoleNames = input.RoleNames.Trim();
-            existing.Photo = string.IsNullOrWhiteSpace(input.Photo) ? existing.Photo : input.Photo.Trim();
+            if (savedPhoto != null)
+                existing.Photo = savedPhoto;
+            else
+                existing.Photo = string.IsNullOrWhiteSpace(input.Photo) ? existing.Photo : input.Photo.Trim();
 
             await HRDataService.UpdateEmployeeAsync(existing);
             TempData["SuccessMessage"] = "Đã cập nhật nhân viên";

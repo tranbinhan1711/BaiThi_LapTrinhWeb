@@ -1,54 +1,76 @@
 @{
-    ViewData["Title"] = "Xóa hình ảnh sản phẩm";
+    var product = ViewBag.Product as Product;
+    var photo = ViewBag.Photo as ProductPhoto;
+    if (product == null || photo == null) { throw new InvalidOperationException("Thiếu dữ liệu xóa."); }
+    var imgUrl = ProductPhotos.ResolveVirtualPath(photo.Photo, product.ProductName);
+}
+@section PageToolBar {
+    <a asp-action="ListPhotos" asp-route-id="@product.ProductID" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
 }
 
-<div class="card card-danger card-outline mb-4">
-    <div class="card-header">
-        <h3 class="card-title">Xác nhận xóa hình ảnh</h3>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa hình ảnh này không?
-        </div>
-
-        <h5>Thông tin hình ảnh:</h5>
-        <div class="row">
-            <div class="col-md-6">
-                <table class="table table-bordered">
-                    <tr>
-                        <th style="width: 150px;">Sản phẩm:</th>
-                        <td>Sản phẩm 1</td>
-                    </tr>
-                    <tr>
-                        <th>Tiêu đề:</th>
-                        <td>Hình ảnh 1</td>
-                    </tr>
-                    <tr>
-                        <th>Thứ tự:</th>
-                        <td>1</td>
-                    </tr>
-                    <tr>
-                        <th>Ảnh chính:</th>
-                        <td><span class="badge bg-success">Có</span></td>
-                    </tr>
-                </table>
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận xóa ảnh
+                </h5>
             </div>
-            <div class="col-md-6">
-                <div class="text-center border rounded p-3">
-                    <img src="https://via.placeholder.com/400x300?text=Photo+to+Delete" class="img-fluid" alt="Photo to Delete">
+            <div class="card-body">
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Bạn có chắc chắn muốn xóa ảnh này khỏi thư viện?
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width:160px">Mặt hàng</th>
+                                <td>@product.ProductName</td>
+                            </tr>
+                            <tr>
+                                <th>Mô tả</th>
+                                <td>@photo.Description</td>
+                            </tr>
+                            <tr>
+                                <th>Thứ tự</th>
+                                <td>@photo.DisplayOrder</td>
+                            </tr>
+                            <tr>
+                                <th>Ẩn với khách</th>
+                                <td>@(photo.IsHidden ? "Có" : "Không")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center border rounded p-3 bg-light">
+                            @if (!string.IsNullOrWhiteSpace(imgUrl))
+                            {
+                                <img src="@Url.Content(imgUrl)" class="img-fluid img-thumbnail" style="max-height:280px" alt="" />
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">Không hiển thị được ảnh</p>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="card-footer">
+                <form asp-action="DeletePhoto" asp-route-id="@product.ProductID" asp-route-photoId="@photo.PhotoID" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xác nhận xóa
+                    </button>
+                </form>
+                <a asp-action="ListPhotos" asp-route-id="@product.ProductID" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Hủy bỏ
+                </a>
+            </div>
         </div>
-    </div>
-    <div class="card-footer">
-        <form onsubmit="event.preventDefault()" style="display: inline;">
-            <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash"></i> Xác nhận xóa
-            </button>
-        </form>
-        <a href="~/Product/ListPhoto/1" class="btn btn-secondary">
-            <i class="bi bi-x-circle"></i> Hủy bỏ
-        </a>
     </div>
 </div>

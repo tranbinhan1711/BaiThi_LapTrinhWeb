@@ -71,6 +71,17 @@ public class CartController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>Trang xác nhận xóa toàn bộ giỏ hàng.</summary>
+    [HttpGet]
+    public IActionResult ClearConfirm()
+    {
+        var cart = ShopContext.GetCart(HttpContext);
+        if (!cart.Any())
+            return RedirectToAction(nameof(Index));
+
+        return View(cart);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Clear()

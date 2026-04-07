@@ -25,6 +25,17 @@ namespace SV22T1020536.DataLayers.SqlServer
         }
 
         /// <summary>
+        /// Cột Province FK tới Provinces.ProvinceName — phải gửi SQL NULL khi không chọn, không dùng chuỗi rỗng.
+        /// </summary>
+        private static string? ProvinceForDb(string? province)
+        {
+            if (string.IsNullOrWhiteSpace(province))
+                return null;
+            var t = province.Trim();
+            return t.Length <= Nvarchar255MaxLen ? t : t[..Nvarchar255MaxLen];
+        }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="connectionString"></param>
@@ -48,7 +59,7 @@ namespace SV22T1020536.DataLayers.SqlServer
                 {
                     CustomerName = Truncate(data.CustomerName, Nvarchar255MaxLen),
                     ContactName = Truncate(data.ContactName, Nvarchar255MaxLen),
-                    Province = Truncate(data.Province, Nvarchar255MaxLen),
+                    Province = ProvinceForDb(data.Province),
                     Address = Truncate(data.Address, Nvarchar255MaxLen),
                     Phone = Truncate(data.Phone, Nvarchar255MaxLen),
                     Email = Truncate(data.Email, EmailMaxLen),
@@ -192,7 +203,7 @@ namespace SV22T1020536.DataLayers.SqlServer
                 {
                     CustomerName = Truncate(data.CustomerName, Nvarchar255MaxLen),
                     ContactName = Truncate(data.ContactName, Nvarchar255MaxLen),
-                    Province = Truncate(data.Province, Nvarchar255MaxLen),
+                    Province = ProvinceForDb(data.Province),
                     Address = Truncate(data.Address, Nvarchar255MaxLen),
                     Phone = Truncate(data.Phone, Nvarchar255MaxLen),
                     Email = Truncate(data.Email, EmailMaxLen),

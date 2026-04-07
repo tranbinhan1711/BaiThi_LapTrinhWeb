@@ -7,7 +7,7 @@
     <div class="card-header">
         <h3 class="card-title">Thêm nhân viên mới</h3>
     </div>
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
         <div class="card-body">
@@ -75,6 +75,13 @@
                     <input class="form-check-input" type="checkbox" asp-for="IsWorking" />
                     <label class="form-check-label" asp-for="IsWorking">Đang làm việc</label>
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="photoFile" class="form-label">Ảnh đại diện (tuỳ chọn)</label>
+                <input type="file" name="photoFile" id="photoFile" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.bmp" />
+                @Html.ValidationMessage("photoFile", "", new { @class = "text-danger small d-block" })
+                <div class="form-text">Chọn ảnh từ máy (tối đa 5 MB).</div>
             </div>
         </div>
         <div class="card-footer">

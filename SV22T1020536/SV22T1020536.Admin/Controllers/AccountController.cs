@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SV22T1020536.Admin.AppCodes;
 using SV22T1020536.Admin.ViewModels;
 using SV22T1020536.BusinessLayers;
-using SV22T1020536.Models.HR;
 using System.Security.Claims;
 
 namespace SV22T1020536.Admin.Controllers
 {
     /// <summary>
-    /// Xác thực tài khoản nhân viên: đăng nhập, đăng ký, hồ sơ và mật khẩu.
+    /// Xác thực tài khoản nhân viên: đăng nhập, hồ sơ và mật khẩu.
     /// </summary>
     public class AccountController : Controller
     {
@@ -81,53 +81,6 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Form đăng ký tài khoản nhân viên (mẫu).
-        /// </summary>
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View(new AdminRegisterViewModel());
-        }
-
-        /// <summary>
-        /// Tạo nhân viên mới với chức vụ được phép (Staff/Manager/Admin).
-        /// </summary>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(AdminRegisterViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var email = model.Email.Trim();
-            if (!await HRDataService.ValidateEmployeeEmailAsync(email, 0))
-            {
-                ModelState.AddModelError(nameof(model.Email), "Email đã được sử dụng.");
-                return View(model);
-            }
-
-            var roleNames = model.RoleNames?.Trim() ?? "";
-            // Chỉ cho phép các quyền trong UI đăng ký.
-            if (roleNames != "Staff" && roleNames != "Manager" && roleNames != "Admin")
-            {
-                ModelState.AddModelError(nameof(model.RoleNames), "Chức vụ không hợp lệ.");
-                return View(model);
-            }
-
-            var employee = new Employee
-            {
-                FullName = model.FullName.Trim(),
-                Email = email,
-                Password = CryptHelper.HashMD5(model.Password ?? ""),
-                IsWorking = true,
-                RoleNames = roleNames,
-            };
-
-            await HRDataService.AddEmployeeAsync(employee);
-            return RedirectToAction(nameof(Login));
-        }
-
-        /// <summary>
         /// Trang thông báo khi người dùng không có quyền truy cập.
         /// </summary>
         [HttpGet]
@@ -162,34 +115,77 @@ namespace SV22T1020536.Admin.Controllers
         }
 
         /// <summary>
-        /// Form đổi mật khẩu.
+        /// Form đổi mật khẩu cho tài khoản đang đăng nhập.
         /// </summary>
         /// <returns>View đổi mật khẩu.</returns>
         [HttpGet]
-        public IActionResult ChangePassword()
+        [Authorize]
+        public async Task<IActionResult> ChangePassword()
         {
-            return View();
+            if (!TryGetCurrentEmployeeId(out var id))
+                return Challenge();
+
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null || !employee.IsWorking)
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(nameof(Login));
+            }
+
+            ViewBag.DisplayName = employee.FullName ?? employee.Email;
+            ViewBag.Email = employee.Email;
+            return View(new AdminChangePasswordViewModel());
         }
 
         /// <summary>
-        /// Xử lý đổi mật khẩu (mẫu demo).
+        /// Cập nhật mật khẩu nhân viên đang đăng nhập (MD5, có kiểm tra mật khẩu cũ).
         /// </summary>
-        /// <param name="oldPassword">Mật khẩu hiện tại.</param>
-        /// <param name="newPassword">Mật khẩu mới.</param>
-        /// <param name="confirmPassword">Xác nhận mật khẩu mới (phải trùng với mật khẩu mới).</param>
-        /// <returns>Chuyển về trang chủ nếu hợp lệ.</returns>
         [HttpPost]
-        public IActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(AdminChangePasswordViewModel model)
         {
-            // Kiểm tra và đổi mật khẩu (giả lập)
-            if (newPassword != confirmPassword)
+            if (!TryGetCurrentEmployeeId(out var id))
+                return Challenge();
+
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null || !employee.IsWorking)
             {
-                ModelState.AddModelError("", "Mật khẩu xác nhận không trùng khớp.");
-                return View();
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction(nameof(Login));
             }
 
-            // Xử lý đổi mật khẩu thành công...
-            return RedirectToAction("Index", "Home");
+            ViewBag.DisplayName = employee.FullName ?? employee.Email;
+            ViewBag.Email = employee.Email;
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var oldHashed = CryptHelper.HashMD5(model.OldPassword ?? "");
+            var oldOk = !string.IsNullOrWhiteSpace(employee.Password) &&
+                        (employee.Password == oldHashed || employee.Password == model.OldPassword);
+            if (!oldOk)
+            {
+                ModelState.AddModelError(nameof(model.OldPassword), "Mật khẩu hiện tại không đúng.");
+                return View(model);
+            }
+
+            var ok = await HRDataService.ChangeEmployeePasswordAsync(id, CryptHelper.HashMD5(model.NewPassword ?? ""));
+            if (!ok)
+            {
+                ModelState.AddModelError(string.Empty, "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "Đã đổi mật khẩu thành công.";
+            return RedirectToAction(nameof(ChangePassword));
+        }
+
+        private bool TryGetCurrentEmployeeId(out int id)
+        {
+            id = 0;
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(claim, out id) && id > 0;
         }
     }
 }

@@ -12,7 +12,7 @@
                 <h3 class="card-title">Thông tin mặt hàng</h3>
             </div>
             <div class="card-body">
-                <form asp-action="Create" method="post">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
@@ -76,8 +76,10 @@
                     </div>
 
                     <div class="mb-0 mt-3">
-                        <label asp-for="Photo" class="form-label fw-semibold">Tên file ảnh (tuỳ chọn)</label>
-                        <input asp-for="Photo" class="form-control" placeholder="VD: product.png" />
+                        <label for="photoFile" class="form-label fw-semibold">Ảnh đại diện (tuỳ chọn)</label>
+                        <input type="file" name="photoFile" id="photoFile" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.bmp" />
+                        @Html.ValidationMessage("photoFile", "", new { @class = "text-danger small d-block" })
+                        <div class="form-text">Chọn ảnh từ máy tính (tối đa 5 MB). Định dạng: JPG, PNG, GIF, WEBP, BMP.</div>
                     </div>
 
                     <div class="mt-4">

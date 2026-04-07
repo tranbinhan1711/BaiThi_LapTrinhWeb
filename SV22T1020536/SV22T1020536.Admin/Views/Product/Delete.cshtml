@@ -1,6 +1,6 @@
 @model Product
 @{
-    ViewBag.Title = "Xóa mặt hàng";
+    ViewData["Title"] = "Xác nhận xóa mặt hàng";
     var categoryName = ViewBag.CategoryName as string;
     var supplierName = ViewBag.SupplierName as string;
 }
@@ -8,51 +8,56 @@
 @section PageToolBar {
     <button type="submit" form="formDelete" class="btn btn-danger">
         <i class="bi bi-trash me-1"></i>
-        Xóa
+        Xác nhận xóa
     </button>
+    <a asp-action="Edit" asp-route-id="@Model.ProductID" class="btn btn-outline-secondary ms-1">
+        <i class="bi bi-pencil"></i>
+        Sửa mặt hàng
+    </a>
     <a href="~/Product" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
-        Quay lại
+        Hủy — về danh sách
     </a>
 }
 
 <div class="row justify-content-center">
-    <div class="col-12">
+    <div class="col-12 col-xl-10">
         <div class="card card-danger card-outline">
             <div class="card-header">
                 <h5 class="card-title mb-0 text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     Xác nhận xóa mặt hàng
                 </h5>
             </div>
 
             <div class="card-body">
-                <form id="formDelete"
-                      asp-action="Delete"
-                      asp-route-id="@Model.ProductID"
-                      method="post"
-                      onsubmit="return confirm('Xác nhận xóa vĩnh viễn mặt hàng này? Thao tác không thể hoàn tác.');">
-                    @Html.AntiForgeryToken()
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-                    }
-                    <div class="alert alert-warning d-flex align-items-center">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Bạn có chắc chắn muốn xóa mặt hàng sau không?
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger mb-4">
+                        <i class="bi bi-x-circle me-1"></i>
+                        @TempData["ErrorMessage"]
                     </div>
+                }
+
+                <div class="alert alert-warning mb-4">
+                    <strong>Cảnh báo:</strong> Bạn sắp xóa vĩnh viễn mặt hàng này. Thao tác không thể hoàn tác. Chỉ xóa được khi mặt hàng chưa được dùng trong đơn hàng.
+                </div>
+
+                <form id="formDelete" asp-action="Delete" asp-route-id="@Model.ProductID" method="post">
+                    @Html.AntiForgeryToken()
 
                     <div class="row">
                         <div class="col-md-8">
+                            <h6 class="text-muted text-uppercase small mb-3">Thông tin mặt hàng</h6>
                             <dl class="row mb-0">
                                 <dt class="col-sm-4">Tên mặt hàng</dt>
-                                <dd class="col-sm-8">@Model.ProductName</dd>
+                                <dd class="col-sm-8 fw-semibold">@Model.ProductName</dd>
 
                                 <dt class="col-sm-4">Loại hàng</dt>
-                                <dd class="col-sm-8">@(categoryName ?? "-")</dd>
+                                <dd class="col-sm-8">@(categoryName ?? "—")</dd>
 
                                 <dt class="col-sm-4">Nhà cung cấp</dt>
-                                <dd class="col-sm-8">@(supplierName ?? "-")</dd>
+                                <dd class="col-sm-8">@(supplierName ?? "—")</dd>
 
                                 <dt class="col-sm-4">Đơn vị tính</dt>
                                 <dd class="col-sm-8">@Model.Unit</dd>
@@ -73,11 +78,12 @@
                                 </dd>
 
                                 <dt class="col-sm-4">Mô tả</dt>
-                                <dd class="col-sm-8">@Model.ProductDescription</dd>
+                                <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.ProductDescription) ? "—" : Model.ProductDescription)</dd>
                             </dl>
                         </div>
 
-                        <div class="col-md-4 text-end">
+                        <div class="col-md-4 text-center">
+                            <div class="text-muted small mb-2">Ảnh đại diện</div>
                             @{
                                 var delPhoto = ProductPhotos.ResolveVirtualPath(Model.Photo, Model.ProductName);
                             }
@@ -85,12 +91,27 @@
                             {
                                 <img src="@Url.Content(delPhoto)"
                                      class="img-fluid img-thumbnail"
-                                     alt="Ảnh mặt hàng"
+                                     alt=""
                                      style="max-height: 220px;" />
+                            }
+                            else
+                            {
+                                <div class="border rounded bg-light py-5 text-muted small">Chưa có ảnh</div>
                             }
                         </div>
                     </div>
                 </form>
+            </div>
+
+            <div class="card-footer d-flex flex-wrap gap-2">
+                <button type="submit" form="formDelete" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>
+                    Xác nhận xóa mặt hàng
+                </button>
+                <a href="~/Product" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Hủy — không xóa
+                </a>
             </div>
         </div>
     </div>

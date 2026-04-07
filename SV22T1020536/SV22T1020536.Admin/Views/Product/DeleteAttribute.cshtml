@@ -1,45 +1,59 @@
 @{
-    ViewData["Title"] = "Xóa thuộc tính sản phẩm";
+    var product = ViewBag.Product as Product;
+    var attr = ViewBag.Attribute as ProductAttribute;
+    if (product == null || attr == null) { throw new InvalidOperationException("Thiếu dữ liệu xóa."); }
+}
+@section PageToolBar {
+    <a asp-action="ListAttributes" asp-route-id="@product.ProductID" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
 }
 
-<div class="card card-danger card-outline mb-4">
-    <div class="card-header">
-        <h3 class="card-title">Xác nhận xóa thuộc tính</h3>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa thuộc tính này không?
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="card card-danger card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận xóa thuộc tính
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Bạn có chắc chắn muốn xóa thuộc tính này?
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width:220px">Mặt hàng</th>
+                        <td>@product.ProductName</td>
+                    </tr>
+                    <tr>
+                        <th>Tên thuộc tính</th>
+                        <td>@attr.AttributeName</td>
+                    </tr>
+                    <tr>
+                        <th>Giá trị</th>
+                        <td>@attr.AttributeValue</td>
+                    </tr>
+                    <tr>
+                        <th>Thứ tự hiển thị</th>
+                        <td>@attr.DisplayOrder</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="card-footer">
+                <form asp-action="DeleteAttribute" asp-route-id="@product.ProductID" asp-route-attributeId="@attr.AttributeID" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xác nhận xóa
+                    </button>
+                </form>
+                <a asp-action="ListAttributes" asp-route-id="@product.ProductID" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Hủy bỏ
+                </a>
+            </div>
         </div>
-
-        <h5>Thông tin thuộc tính:</h5>
-        <table class="table table-bordered">
-            <tr>
-                <th style="width: 200px;">Sản phẩm:</th>
-                <td>Sản phẩm 1</td>
-            </tr>
-            <tr>
-                <th>Tên thuộc tính:</th>
-                <td>Thuộc tính 1</td>
-            </tr>
-            <tr>
-                <th>Giá trị:</th>
-                <td>Giá trị 1</td>
-            </tr>
-            <tr>
-                <th>Thứ tự hiển thị:</th>
-                <td>1</td>
-            </tr>
-        </table>
-    </div>
-    <div class="card-footer">
-        <form onsubmit="event.preventDefault()" style="display: inline;">
-            <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash"></i> Xác nhận xóa
-            </button>
-        </form>
-        <a href="~/Product/ListAttributes/1" class="btn btn-secondary">
-            <i class="bi bi-x-circle"></i> Hủy bỏ
-        </a>
     </div>
 </div>

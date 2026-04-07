@@ -1,66 +1,55 @@
-﻿@{
+﻿@model ProductAttribute
+@{
+    var product = ViewBag.Product as Product;
+    if (product == null) { throw new InvalidOperationException("Thiếu ViewBag.Product"); }
 }
 @section PageToolBar {
-    <button type="submit" form="formEdit" class="btn btn-primary">
+    <button type="submit" form="formEditAttr" class="btn btn-primary">
         <i class="bi bi-save"></i>
-        Lưu thuộc tính
+        Lưu
     </button>
-
-    <a href="~/Product/Edit/123#attributes" class="btn btn-secondary ms-1">
+    <a asp-action="ListAttributes" asp-route-id="@product.ProductID" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
         Quay lại
     </a>
 }
+
 <div class="row justify-content-center">
-    <div class="col-12">
-        <div class="card card-outline card-success">
+    <div class="col-12 col-xl-10">
+        <div class="card card-success card-outline">
             <div class="card-header">
-                <h5 class="mb-0">Thông tin thuộc tính mặt hàng</h5>
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Sửa thuộc tính — <strong>@product.ProductName</strong>
+                </h5>
             </div>
+            <form id="formEditAttr" asp-action="EditAttribute" asp-route-id="@product.ProductID" asp-route-attributeId="@Model.AttributeID" method="post">
+                @Html.AntiForgeryToken()
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
-            <div class="card-body">
-                <form id="formEdit" method="post">
-
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-semibold">
-                            Tên thuộc tính
-                        </label>
-                        <div class="col-sm-9">
-                            <input type="text"
-                                   name="AttributeName"
-                                   class="form-control"
-                                   placeholder="Ví dụ: Màu sắc, Kích thước"
-                                   required autofocus />
-                        </div>
+                    <div class="mb-3">
+                        <label for="attributeName" class="form-label">Tên thuộc tính <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="attributeName" name="attributeName" value="@Model.AttributeName" required maxlength="255" autofocus />
                     </div>
-
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-semibold">
-                            Giá trị thuộc tính
-                        </label>
-                        <div class="col-sm-9">
-                            <input type="text"
-                                   name="AttributeValue"
-                                   class="form-control"
-                                   placeholder="Ví dụ: Đỏ, XL, 500g"
-                                   required />
-                        </div>
+                    <div class="mb-3">
+                        <label for="attributeValue" class="form-label">Giá trị <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="attributeValue" name="attributeValue" value="@Model.AttributeValue" required maxlength="500" />
                     </div>
-
-                    <div class="row mb-4">
-                        <label class="col-sm-3 fw-semibold">
-                            Thứ tự hiển thị
-                        </label>
-                        <div class="col-sm-3">
-                            <input type="number"
-                                   name="DisplayOrder"
-                                   class="form-control"
-                                   value="1"
-                                   min="1" />
-                        </div>
+                    <div class="mb-0">
+                        <label for="displayOrder" class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" style="max-width:12rem" id="displayOrder" name="displayOrder" value="@Model.DisplayOrder" />
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Lưu thuộc tính
+                    </button>
+                    <a asp-action="ListAttributes" asp-route-id="@product.ProductID" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Hủy bỏ
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

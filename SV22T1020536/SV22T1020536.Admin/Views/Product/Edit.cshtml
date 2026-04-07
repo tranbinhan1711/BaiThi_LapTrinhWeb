@@ -10,9 +10,7 @@
         Lưu dữ liệu
     </button>
 
-    <a asp-action="Delete" asp-route-id="@Model.ProductID"
-       class="btn btn-outline-danger ms-1"
-       onclick="return confirm('Bạn có chắc chắn muốn xóa mặt hàng này? Bạn sẽ được chuyển đến trang xác nhận xóa.');">
+    <a asp-action="Delete" asp-route-id="@Model.ProductID" class="btn btn-outline-danger ms-1">
         <i class="bi bi-trash"></i>
         Xóa
     </a>
@@ -21,6 +19,14 @@
         <i class="bi bi-arrow-left"></i>
         Quay lại
     </a>
+}
+
+@if (TempData["SuccessMessage"] is string successMsg && !string.IsNullOrWhiteSpace(successMsg))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMsg
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
 }
 
 <div class="row justify-content-center">
@@ -34,9 +40,10 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" asp-action="Edit" asp-route-id="@Model.ProductID" method="post">
+                <form id="formEdit" asp-action="Edit" asp-route-id="@Model.ProductID" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <input type="hidden" asp-for="ProductID" />
+                    <input type="hidden" asp-for="Photo" />
                     <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
                     <div class="row mb-3">
@@ -98,9 +105,21 @@
                     </div>
 
                     <div class="row mb-3">
-                        <label asp-for="Photo" class="col-sm-3 col-form-label">Tên file ảnh</label>
+                        <label class="col-sm-3 col-form-label" for="photoFile">Ảnh đại diện</label>
                         <div class="col-sm-9">
-                            <input asp-for="Photo" class="form-control" />
+                            @{
+                                var editPreview = ProductPhotos.ResolveVirtualPath(Model.Photo, Model.ProductName);
+                            }
+                            @if (!string.IsNullOrWhiteSpace(editPreview))
+                            {
+                                <div class="mb-2">
+                                    <img src="@Url.Content(editPreview)" class="img-thumbnail" style="max-height:120px" alt="" />
+                                    <div class="form-text">Ảnh hiện tại. Chọn file mới bên dưới để thay thế.</div>
+                                </div>
+                            }
+                            <input type="file" name="photoFile" id="photoFile" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,.jpg,.jpeg,.png,.gif,.webp,.bmp" />
+                            @Html.ValidationMessage("photoFile", "", new { @class = "text-danger small d-block" })
+                            <div class="form-text">Tối đa 5 MB. Để nguyên nếu không đổi ảnh.</div>
                         </div>
                     </div>
 
@@ -112,6 +131,34 @@
                     </div>
 
                 </form>
+            </div>
+        </div>
+
+        <p class="text-muted small mt-4 mb-2">Quản lý bổ sung cho mặt hàng này:</p>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <a asp-action="ListPhotos" asp-route-id="@Model.ProductID" class="card card-outline card-primary shadow-sm text-decoration-none text-body h-100 border-top border-primary border-3">
+                    <div class="card-body d-flex align-items-center py-4">
+                        <span class="display-6 text-primary me-3"><i class="bi bi-images"></i></span>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Thư viện ảnh</h5>
+                            <small class="text-muted">Xem danh sách, thêm / sửa / xóa ảnh album</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted fs-4"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a asp-action="ListAttributes" asp-route-id="@Model.ProductID" class="card card-outline card-success shadow-sm text-decoration-none text-body h-100 border-top border-success border-3">
+                    <div class="card-body d-flex align-items-center py-4">
+                        <span class="display-6 text-success me-3"><i class="bi bi-list-check"></i></span>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">Thuộc tính mặt hàng</h5>
+                            <small class="text-muted">Màu sắc, kích thước, chất liệu…</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted fs-4"></i>
+                    </div>
+                </a>
             </div>
         </div>
     </div>

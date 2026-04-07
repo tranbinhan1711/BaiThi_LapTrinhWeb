@@ -19,33 +19,25 @@ namespace SV22T1020536.Admin.ViewModels
     }
 
     /// <summary>
-    /// Dữ liệu form đăng ký nhân viên (mẫu).
+    /// Form đổi mật khẩu cho nhân viên đang đăng nhập.
     /// </summary>
-    public class AdminRegisterViewModel
+    public class AdminChangePasswordViewModel
     {
-        [Required]
-        [Display(Name = "Họ tên")]
-        public string FullName { get; set; } = string.Empty;
-
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu hiện tại.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Mật khẩu")]
-        public string Password { get; set; } = string.Empty;
+        [Display(Name = "Mật khẩu hiện tại")]
+        public string OldPassword { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới.")]
         [DataType(DataType.Password)]
-        [Compare(nameof(Password), ErrorMessage = "Mật khẩu xác nhận không khớp.")]
-        [Display(Name = "Xác nhận mật khẩu")]
+        [Display(Name = "Mật khẩu mới")]
+        public string NewPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu mới.")]
+        [DataType(DataType.Password)]
+        [Compare(nameof(NewPassword), ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        [Display(Name = "Xác nhận mật khẩu mới")]
         public string ConfirmPassword { get; set; } = string.Empty;
-
-        [Required]
-        [Display(Name = "Chức vụ")]
-        public string RoleNames { get; set; } = string.Empty;
     }
 }
 

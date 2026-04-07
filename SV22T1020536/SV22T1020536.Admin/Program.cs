@@ -4,7 +4,33 @@ using Microsoft.AspNetCore.Hosting;
 using SV22T1020536.Models.Common;
 using System.Globalization;
 
-var builder = WebApplication.CreateBuilder(args);
+static string ResolveContentRoot(string[] appArgs)
+{
+    for (var i = 0; i < appArgs.Length - 1; i++)
+    {
+        var a = appArgs[i];
+        if (a is "--contentRoot" or "/contentRoot")
+        {
+            var p = appArgs[i + 1];
+            if (Directory.Exists(p))
+                return Path.GetFullPath(p);
+        }
+    }
+
+    for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir != null; dir = dir.Parent)
+    {
+        if (Directory.Exists(Path.Combine(dir.FullName, "Views")))
+            return dir.FullName;
+    }
+
+    return Directory.GetCurrentDirectory();
+}
+
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = ResolveContentRoot(args),
+});
 
 // Add services to the container.
 builder.Services.AddResponseCompression(options =>
